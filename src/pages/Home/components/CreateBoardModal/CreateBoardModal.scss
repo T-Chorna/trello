@@ -31,7 +31,7 @@ button {
   font-weight: 600;
   padding: 8px 20px;
   cursor: pointer;
-  border: 1px solid #44352b;
+  border: 2px solid #44352bb7;
   color: #44352b;
   background-color: #e9ae69;
 }
@@ -63,6 +63,6 @@ p{
 }
 
 button:hover{
-  border-width: 3px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Тень для объема */
+  border: 2px solid #44352b;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.5); /* Тень для объема */
 }

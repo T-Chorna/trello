@@ -25,19 +25,16 @@
 }
 
 .board-list{
-  list-style-type: none;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+  row-gap: 20px;
+  margin: 0;
   padding: 0;
-
-  
-  
-
 }
 
 .board-list>li{
-    width: 24%;
+    width: 24vw;
     min-height: 50vh;
     background-color: #fffa90; /* Желтый цвет, как у стикеров */
     border: 1px solid #d3d3d3;
@@ -61,7 +58,7 @@
   border-radius: 50%; /* Круглая кнопка */
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  position: absolute;
+  position: fixed;
   bottom: 20px; /* Положение кнопки на доске */
   right: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;

@@ -4,11 +4,12 @@ import { Card } from "../Card/Card"
 import { Button } from "../Button/Button"
 
 interface ListProps {
+  listId: number,
   title: string,
   cards: ICard[] 
 }
 
-const List = ({title, cards}: ListProps) => {
+const List = ({listId, title, cards}: ListProps) => {
   return <>
   <h2>{title}</h2>  
   <ul className="cards-list">

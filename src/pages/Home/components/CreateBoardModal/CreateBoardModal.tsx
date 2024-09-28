@@ -14,15 +14,19 @@ interface BoardData {
 }
 
 interface ModalProps{
-  inputValue: string,
-  setInputValue: (input:string)=>void
-  setBoards:(boards:BoardData[])=>void
-  toggleModalFunc: ()=>void
+  saveBoard: (title:string)=>void,
+  toggleModal: ()=>void
 }
 
 
-const CreateBoardModal = ({inputValue, setInputValue, setBoards, toggleModalFunc}:ModalProps) => {
+const CreateBoardModal = ({saveBoard, toggleModal}:ModalProps) => {
+  const [inputValue, setInputValue] = useState('')
   const [isCorrectValue, setIsCorrectValue] = useState(true);
+
+  const closeModal = ()=>{
+    toggleModal();
+    setInputValue('');
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -34,24 +38,9 @@ const CreateBoardModal = ({inputValue, setInputValue, setBoards, toggleModalFunc
     if(!isCorrect){
       return;
     }
-    const fetchData = async () => {
-      try {
-        const data = {
-          title: inputValue
-        }
-        const postResponse = await instance.post("board", data);
-        if(!postResponse)return
-        const getResponse = await instance.get("board")  as {boards: BoardData[]};
-        setBoards(getResponse.boards);
-        
-        setInputValue("");
-        toggleModalFunc();
-      } catch (err) {
-        console.error("Failed to fetch boards", err);
-      }
-    };
-
-    fetchData();
+    saveBoard(inputValue);
+    setInputValue('');
+    closeModal();
   };
 
 
@@ -69,7 +58,7 @@ const CreateBoardModal = ({inputValue, setInputValue, setBoards, toggleModalFunc
         />
         {!isCorrectValue && <p>Назва дошки не повинна бути порожньою і може містити лише літери, цифри, пробіли, тире, крапки та підкреслення.</p>}
         <div className="modal-btns-container">
-          <button onClick={toggleModalFunc} className="close-btn">Закрити</button>
+          <button onClick={closeModal} className="close-btn">Закрити</button>
           <button onClick={handleInputSubmit} className="submit-btn">Додати</button>          
         </div>
 

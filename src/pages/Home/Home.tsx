@@ -9,20 +9,34 @@ import CreateBoardModal from "./components/CreateBoardModal/CreateBoardModal";
 interface BoardData {
   id: number;
   title: string;
-  custom?: {
-    description: string;
-  };
+  custom?: any;
 }
 
 export const Home = () => {
   const [boards, setBoards] = useState<BoardData[]>([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
 
   const toggleModal = () => {
     setModalIsOpen(!modalIsOpen);
-    setInputValue("");
   };
+
+  const addBoard = (title:string) => {
+    const fetchData = async () => {
+      try {
+        const data = {
+          title: title
+        }
+        const postResponse = await instance.post("board", data);
+        if(!postResponse)return
+        const getResponse = await instance.get("board")  as {boards: BoardData[]};
+        setBoards(getResponse.boards);
+      } catch (err) {
+        console.error("Failed to fetch boards", err);
+      }
+    };
+
+    fetchData();
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,10 +75,8 @@ export const Home = () => {
 
       {modalIsOpen && (
         <CreateBoardModal
-          inputValue={inputValue}
-          setInputValue={setInputValue} 
-          setBoards={setBoards} 
-          toggleModalFunc={toggleModal}/>
+          saveBoard={addBoard}
+          toggleModal={toggleModal}/>
       )}
     </div>
   );
