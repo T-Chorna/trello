@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&display=swap');
+
+.board{
+  box-sizing: border-box;
+  margin: 0 auto;
+  width: 100vw;
+  min-height: 100vh;
+  background: url('https://img.freepik.com/premium-photo/cork-texture-corkboard_88281-1802.jpg'); /* Добавь ссылку на изображение текстуры */
+  border: 10px solid #8B4513; /* Коричневая рамка, как у доски */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Тень для объема */
+  padding: 20px;
+  position: relative; /* Позволяет свободно размещать записки внутри */
+  font-family: "Amatic SC", sans-serif;
+  color: #44352b;
+}
+
+
+.board-title{
+  margin:0;
+  font-weight: bolder;
+  font-size: 110px;
+  line-height: 1,5;
+  text-align: center;
+  color: #1f1813;
+}
+
+.board-list{
+  list-style-type: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  padding: 0;
+
+  
+  
+
+}
+
+.board-list>li{
+    width: 24%;
+    min-height: 50vh;
+    background-color: #fffa90; /* Желтый цвет, как у стикеров */
+    border: 1px solid #d3d3d3;
+    padding: 10px;
+    // position: absolute;
+    transform: rotate(-2deg); /* Легкий наклон для естественности */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Тень для записок */
+    transition: box-shadow 1s;
+}
+
+.board-list>li:hover{
+  box-shadow: 10px 3px 6px rgba(0, 0, 0, 0.2); /* Тень для записок */
+}
+
+.add-list-btn{
+  width: 100px;
+  height: 100px;
+  // background-color: #ddb139; /* Цвет кнопки, соответствующий стилю стикеров */
+  background-color: #8b45135d;
+  border: none;
+  border-radius: 50%; /* Круглая кнопка */
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  position: absolute;
+  bottom: 20px; /* Положение кнопки на доске */
+  right: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.add-list-btn:hover{
+  transform: scale(1.1); /* Увеличение кнопки при наведении */
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+.add-list-btn:active{
+  transform: scale(0.95); /* Эффект нажатия */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
