@@ -10,18 +10,55 @@
   }
   
   .sidebar {
+    box-sizing: border-box;
     position: fixed;
     top: 0;
     left: -300px; /* Спочатку прихований за екраном */
     width: 300px;
     height: 100%;
+    overflow-y: scroll;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
     transition: right 0.3s ease; /* Анімація плавного з'явлення */
     z-index: 2;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
   }
   
   .sidebar.visible {
     left: 0; /* Показуємо сайдбар */
+  }
+
+  .sidebarTitle{
+    font-size: 40px;
+    line-height: 1;
+    margin: 8px 0 0 0;
+  }
+
+  .sidebarList{
+    font-size: 30px;
+    font-weight: bold;
+    margin-top: 0;
+  }
+
+  .sidebarListItem{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .sidebarListItem>p{
+    color: #44352b;
+  }
+
+  .colorInput{
+    margin-left: 8px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .btn-list-container>button{
+    cursor: pointer;
   }
   
