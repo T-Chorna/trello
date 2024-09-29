@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import List from "./components/Lists/List";
 import "./components/Board/board.scss";
 import { Button } from "./components/Button/Button";
@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import instance from "../../api/request";
 import { EditBoardInput } from "./components/EditInputs/EditBoardInput";
 import { CreateListModal } from "./components/EditInputs/CreateListModal";
+import { Sidebar } from "./components/Sidebar/Sidebar";
 
 
 interface BoardData {
@@ -43,7 +44,9 @@ export const Board = () => {
   const [lists, setLists] = useState<List[]>([]);
   const [isOpenEditIntup, setIsOpenEditInput] = useState<boolean>(false);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false)
+  const [sidebarIsOpen, setSidebarIsOpen] = useState<boolean>(false);
 
+  const sidebarRef = useRef<HTMLDivElement>(null);
   const { board_id } = useParams();
   const pushPinsImg = `<img src="/push-pins.png" alt="+"/>`;
 
@@ -73,6 +76,10 @@ export const Board = () => {
 
   const toggleModal = ()=>{
     setModalIsOpen(!modalIsOpen);
+  }
+
+  const toggleSidebar = ()=>{
+    setSidebarIsOpen(!sidebarIsOpen);
   }
 
   const addList = (newListTitle:string, newListPosition:number)=>{
@@ -113,16 +120,53 @@ export const Board = () => {
     fetchData();
   }, []);
 
+  // Ховаємо сайдбар при кліку поза ним
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // Перевіряємо, що sidebarRef.current існує і перевіряємо, чи елемент event.target не знаходиться всередині сайдбару
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setSidebarIsOpen(false);
+      }
+    };
+
+    // Додаємо обробник кліку до всього документа
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Чистимо ефект, щоб уникнути витоків пам'яті
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [sidebarIsOpen]);
+
   return (
     <>
       <div className="board">
-        {isOpenEditIntup ? (
-          <EditBoardInput value={title} closeInputFunc={setIsOpenEditInput} saveInputValueFunc={saveNewTitle}/>
-        ) : (
-          <h1 className="board-title" onClick={openEditInput}>
-            {title}
-          </h1>
-        )}
+        <header>
+          <Button
+            title="Відкрити налаштування"
+            name="open-settings-btn"
+            handleClickFunc={toggleSidebar}
+          >
+            <img src="/settings.png" alt=">>" height={40} />
+          </Button>
+          {isOpenEditIntup ? (
+            <EditBoardInput value={title} closeInputFunc={setIsOpenEditInput} saveInputValueFunc={saveNewTitle}/>
+          ) : (
+            <h1 className="board-title" onClick={openEditInput}>
+              {title}
+            </h1>
+          )} 
+          <Button
+            title="Вийти"
+            name="log-out-btn"
+            handleClickFunc={()=>{console.log('logout')}}
+          >
+            Вийти
+          </Button>         
+        </header>
+
+        <Sidebar isSidebarVisible={sidebarIsOpen} sidebarRef={sidebarRef}/>
+
         <ul className="board-list">
           {lists.map((list) => {
             return (

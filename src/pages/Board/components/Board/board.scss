@@ -5,11 +5,10 @@
   margin: 0 auto;
   width: 100vw;
   min-height: 100vh;
-  background: url('https://img.freepik.com/premium-photo/cork-texture-corkboard_88281-1802.jpg'); /* Добавь ссылку на изображение текстуры */
+  // background: url('https://img.freepik.com/premium-photo/cork-texture-corkboard_88281-1802.jpg'); /* Добавь ссылку на изображение текстуры */
+  background: url('texture.webp');
   border: 10px solid #8B4513; /* Коричневая рамка, как у доски */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Тень для объема */
   padding: 20px;
-  position: relative; /* Позволяет свободно размещать записки внутри */
   font-family: "Amatic SC", sans-serif;
   color: #44352b;
 }
@@ -71,4 +70,35 @@
 .add-list-btn:active{
   transform: scale(0.95); /* Эффект нажатия */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.open-settings-btn{
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  cursor: pointer;
+}
+
+.open-settings-btn:hover{
+  border: none;
+  box-shadow: none;
+}
+
+.log-out-btn{
+  border: none;
+  background: rgba(255, 255, 255, 0.3);
+  font-size: 40px;
+  font-weight: bold;
+  font-family: "Amatic SC", sans-serif;
+  color: #1f1813;
+  cursor: pointer;
+}
+
+.log-out-btn:hover{
+  border: none;
+}
+
+.board>header{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
