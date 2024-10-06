@@ -7,6 +7,8 @@ import instance from "../../api/request";
 import { EditBoardInput } from "./components/EditInputs/EditBoardInput";
 import { CreateListModal } from "./components/EditInputs/CreateListModal";
 import { Sidebar } from "./components/Sidebar/Sidebar";
+import { darken } from "polished";
+import { getBoardData, putBoardData } from "../../api/clientRequest";
 
 
 interface BoardData {
@@ -39,12 +41,25 @@ interface Card {
   created_at: number;
 }
 
+interface StyleSettings{
+  borderColor: string,
+  backgroundImg: string,
+  textColor: string,
+  listColor: string
+}
+
 export const Board = () => {
   const [title, setTitleData] = useState<string>("");
   const [lists, setLists] = useState<List[]>([]);
   const [isOpenEditIntup, setIsOpenEditInput] = useState<boolean>(false);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false)
   const [sidebarIsOpen, setSidebarIsOpen] = useState<boolean>(false);
+  const [styles, setStyles] = useState<StyleSettings>({
+    borderColor: "#8B4513",
+    backgroundImg: "url('texture.webp')",
+    textColor: "#44352b",
+    listColor: "#fffa90"
+  })
 
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { board_id } = useParams();
@@ -56,22 +71,8 @@ export const Board = () => {
 
 
   const saveNewTitle = (newTitle:string)=>{
-    const fetchData = async () => {
-      try {
-        const data = {
-          title: newTitle
-        }
-        const putResponse = await instance.put(`board/${board_id}`, data);
-        if(!putResponse)return
-        const getResponse = await instance.get(`board/${board_id}`)  as BoardData;
-        setTitleData(getResponse.title);
-        setLists(getResponse.lists);
-      } catch (err) {
-        console.error("Failed to fetch board", err);
-      }
-    };
-
-    fetchData();
+    if(!board_id) return
+    putBoardData({title:newTitle},board_id,setTitleData,setLists,setStyles)
   }
 
   const toggleModal = ()=>{
@@ -80,6 +81,29 @@ export const Board = () => {
 
   const toggleSidebar = ()=>{
     setSidebarIsOpen(!sidebarIsOpen);
+  }
+
+  const saveSettings = (changes: {
+    lists: {
+      id: number;
+      title: string;
+    }[];
+    borderColor: string;
+    backgroundImg: string;
+    textColor: string;
+    listColor: string;
+  })=>{
+    toggleSidebar();
+    const styles = {
+      borderColor: changes.borderColor,
+      backgroundImg: changes.backgroundImg,
+      textColor: changes.textColor,
+      listColor: changes.listColor
+    }
+    const dataForPut = {title:title, custom: {styles:styles}}
+    if(!board_id) return
+    putBoardData(dataForPut,board_id,setTitleData,setLists,setStyles)
+
   }
 
   const addList = (newListTitle:string, newListPosition:number)=>{
@@ -102,22 +126,20 @@ export const Board = () => {
     fetchData();
   }
 
+  useEffect(()=>{
+    if(!styles) return
+    document.documentElement.style.setProperty('--board-border-color', styles.borderColor);
+    document.documentElement.style.setProperty('--main-color', styles.textColor);
+    document.documentElement.style.setProperty('--title-color', darken(0.2, styles.textColor));
+    document.documentElement.style.setProperty('--sticker-color', styles.listColor);
+    document.documentElement.style.setProperty('--add-card-btn-color', darken(0.1, styles.listColor));
+    document.documentElement.style.setProperty('--board-background', `url(${styles.backgroundImg})`);
+    console.log("Styles updated:", styles);
+  }, [styles])
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // console.log(instance.defaults.baseURL); // Логування baseURL
-        const response = (await instance.get(`board/${board_id}`)) as BoardData;
-        setTitleData(response.title);
-        setLists(response.lists);
-
-        console.log(JSON.stringify(response));
-      } catch (err) {
-        console.error("Failed to fetch board", err);
-      }
-    };
-
-    fetchData();
+    if(!board_id) return
+    getBoardData(board_id, setTitleData, setLists, setStyles)
   }, []);
 
   // Ховаємо сайдбар при кліку поза ним
@@ -165,7 +187,7 @@ export const Board = () => {
           </Button>         
         </header>
 
-        <Sidebar isSidebarVisible={sidebarIsOpen} sidebarRef={sidebarRef}/>
+        <Sidebar isSidebarVisible={sidebarIsOpen} sidebarRef={sidebarRef} saveChange={saveSettings} styles={styles}/>
 
         <ul className="board-list">
           {lists.map((list) => {

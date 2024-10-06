@@ -1,16 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&display=swap');
 
+:root {
+  --board-border-color: #8B4513;
+  --main-color: #44352b;
+  --title-color: #1f1813;
+  --sticker-color:#fffa90;
+  --add-card-btn-color:#fcc98e;
+  --board-background: url('texture.webp');
+}
+
+
 .board{
   box-sizing: border-box;
   margin: 0 auto;
   width: 100vw;
   min-height: 100vh;
   // background: url('https://img.freepik.com/premium-photo/cork-texture-corkboard_88281-1802.jpg'); /* Добавь ссылку на изображение текстуры */
-  background: url('texture.webp');
-  border: 10px solid #8B4513; /* Коричневая рамка, как у доски */
+  background: var(--board-background);
+  border: 10px solid var(--board-border-color); /* Коричневая рамка */
   padding: 20px;
   font-family: "Amatic SC", sans-serif;
-  color: #44352b;
+  color: var(--main-color);
 }
 
 
@@ -20,7 +30,7 @@
   font-size: 110px;
   line-height: 1,5;
   text-align: center;
-  color: #1f1813;
+  color: var(--title-color);
 }
 
 .board-list{
@@ -35,8 +45,7 @@
 .board-list>li{
     width: 24vw;
     min-height: 50vh;
-    background-color: #fffa90; /* Желтый цвет, как у стикеров */
-    border: 1px solid #d3d3d3;
+    background-color: var(--sticker-color); /* Желтый цвет, как у стикеров */
     padding: 10px;
     // position: absolute;
     transform: rotate(-2deg); /* Легкий наклон для естественности */

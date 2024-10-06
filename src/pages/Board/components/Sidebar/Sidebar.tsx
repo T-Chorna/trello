@@ -1,10 +1,28 @@
-import { RefObject, useState } from "react";
+import { RefObject, useEffect, useState } from "react";
 import "./Sidebar.scss";
 import { Button } from "../Button/Button";
 
 interface SidebarProps {
   isSidebarVisible: boolean;
   sidebarRef: RefObject<HTMLDivElement>;
+  saveChange: (changes: {
+    lists: List[];
+    borderColor: string;
+    backgroundImg: string;
+    textColor: string;
+    listColor: string;
+  },) => void;
+  styles: {
+    borderColor: string;
+    backgroundImg: string;
+    textColor: string;
+    listColor: string; 
+  }
+}
+
+interface List {
+  id: number;
+  title: string;
 }
 
 const arrTitlesList = [
@@ -13,12 +31,19 @@ const arrTitlesList = [
   { id: 3, title: "Картка" },
 ];
 
-export const Sidebar = ({ isSidebarVisible, sidebarRef }: SidebarProps) => {
-  const [listTitles, setListTitles] = useState(arrTitlesList);
-  const [borderColor, setBorderColor] = useState("black");
-  const [backgroundImg, setBackgroundImg] = useState("black");
-  const [textColor, setTextColor] = useState("black");
-  const [listColor, setListColor] = useState("black");
+export const Sidebar = ({
+  isSidebarVisible,
+  sidebarRef,
+  saveChange,
+  styles
+}: SidebarProps) => {
+  const [listTitles, setListTitles] = useState<List[]>(arrTitlesList);
+  const [borderColor, setBorderColor] = useState(styles.borderColor);
+  const [backgroundImg, setBackgroundImg] = useState(styles.backgroundImg);
+  const [textColor, setTextColor] = useState(styles.textColor);
+  const [listColor, setListColor] = useState(styles.listColor);
+
+
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Отримуємо файл
@@ -59,13 +84,23 @@ export const Sidebar = ({ isSidebarVisible, sidebarRef }: SidebarProps) => {
     // Обмін місцями
     [array[index], array[index + 1]] = [array[index + 1], array[index]];
     setListTitles(array);
-  }
+  };
 
-  const deleteElementByIndex = (index:number) => {
+  const deleteElementByIndex = (index: number) => {
     let array = [...listTitles];
     array.splice(index, 1);
-  
+
     setListTitles(array);
+  };
+
+  const handleSaveChanges = () => {
+    saveChange({
+      lists: listTitles,
+      borderColor: borderColor,
+      backgroundImg: backgroundImg,
+      textColor: textColor,
+      listColor: listColor,
+    });
   };
 
   return (
@@ -84,21 +119,27 @@ export const Sidebar = ({ isSidebarVisible, sidebarRef }: SidebarProps) => {
                 <Button
                   title={"Вгору"}
                   name={"btn-move-list-up"}
-                  handleClickFunc={() => {swapAdjacent(index-1)}}
+                  handleClickFunc={() => {
+                    swapAdjacent(index - 1);
+                  }}
                 >
                   <img src="/arrow-up.png" alt="<" width={10} height={10} />
                 </Button>
                 <Button
                   title={"Донизу"}
                   name={"btn-move-list-down"}
-                  handleClickFunc={() => {swapAdjacent(index)}}
+                  handleClickFunc={() => {
+                    swapAdjacent(index);
+                  }}
                 >
                   <img src="/arrow-down.jpg" alt=">" width={10} height={10} />
                 </Button>
                 <Button
                   title={"Видалити"}
                   name={"btn-delete-list"}
-                  handleClickFunc={() => {deleteElementByIndex(index)}}
+                  handleClickFunc={() => {
+                    deleteElementByIndex(index);
+                  }}
                 >
                   <img src="/redCross.png" alt="X" width={10} height={10} />
                 </Button>
@@ -112,6 +153,7 @@ export const Sidebar = ({ isSidebarVisible, sidebarRef }: SidebarProps) => {
         <input
           type="color"
           name="borderColor"
+          value={borderColor}
           onChange={handleChangeBorderColor}
           className="colorInput"
         />
@@ -130,6 +172,7 @@ export const Sidebar = ({ isSidebarVisible, sidebarRef }: SidebarProps) => {
         <input
           type="color"
           name="textColor"
+          value={textColor}
           onChange={handleChangeTextColor}
           className="colorInput"
         />
@@ -139,10 +182,12 @@ export const Sidebar = ({ isSidebarVisible, sidebarRef }: SidebarProps) => {
         <input
           type="color"
           name="listColor"
+          value={listColor}
           onChange={handleChangeListColor}
           className="colorInput"
         />
       </label>
+      <Button title={"Зберегти налаштування"} name={"btn-save-settings"} handleClickFunc={handleSaveChanges}>Зберегти</Button>
     </div>
   );
 };
