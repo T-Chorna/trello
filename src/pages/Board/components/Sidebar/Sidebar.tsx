@@ -17,7 +17,10 @@ interface SidebarProps {
     backgroundImg: string;
     textColor: string;
     listColor: string; 
-  }
+  };
+  lists: List[];
+  updateLists: (lists:List[])=>void;
+  deleteList: (listId:number)=>void;
 }
 
 interface List {
@@ -25,25 +28,20 @@ interface List {
   title: string;
 }
 
-const arrTitlesList = [
-  { id: 1, title: "Моя дошка" },
-  { id: 2, title: "Список" },
-  { id: 3, title: "Картка" },
-];
-
 export const Sidebar = ({
   isSidebarVisible,
   sidebarRef,
   saveChange,
-  styles
+  styles,
+  lists,
+  updateLists,
+  deleteList
 }: SidebarProps) => {
-  const [listTitles, setListTitles] = useState<List[]>(arrTitlesList);
-  const [borderColor, setBorderColor] = useState(styles.borderColor);
-  const [backgroundImg, setBackgroundImg] = useState(styles.backgroundImg);
-  const [textColor, setTextColor] = useState(styles.textColor);
-  const [listColor, setListColor] = useState(styles.listColor);
-
-
+  const [listTitles, setListTitles] = useState<List[]>([]);
+  const [borderColor, setBorderColor] = useState('');
+  const [backgroundImg, setBackgroundImg] = useState('');
+  const [textColor, setTextColor] = useState('');
+  const [listColor, setListColor] = useState('');
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Отримуємо файл
@@ -87,10 +85,11 @@ export const Sidebar = ({
   };
 
   const deleteElementByIndex = (index: number) => {
-    let array = [...listTitles];
-    array.splice(index, 1);
+    // let array = [...listTitles];
+    // array.splice(index, 1);
 
-    setListTitles(array);
+    // setListTitles(array);
+    deleteList(listTitles[index].id)
   };
 
   const handleSaveChanges = () => {
@@ -101,7 +100,27 @@ export const Sidebar = ({
       textColor: textColor,
       listColor: listColor,
     });
+    updateLists(listTitles)
   };
+
+  useEffect(()=>{
+    setListTitles([...lists])
+  },[lists])
+
+  useEffect(()=>{
+    setBorderColor(styles.borderColor);
+    setBackgroundImg(styles.backgroundImg);
+    setTextColor(styles.textColor);
+    setListColor(styles.listColor);
+  },[styles])
+
+  useEffect(()=>{
+    setBorderColor(styles.borderColor);
+    setBackgroundImg(styles.backgroundImg);
+    setTextColor(styles.textColor);
+    setListColor(styles.listColor);
+    setListTitles([...lists])
+  },[isSidebarVisible])
 
   return (
     <div

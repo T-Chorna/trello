@@ -40,12 +40,12 @@ export const getBoardData = (
       const response = (await instance.get(`board/${boardId}`)) as Boards;
       setTitleData(response.title);
       setLists(response.lists);
-      console.log(JSON.stringify(response.custom.styles));
+      console.log(JSON.stringify(response.lists));
       if (response.custom.styles) {
         setStyles(response.custom?.styles);
       }
 
-      console.log(JSON.stringify(response));
+      // console.log(JSON.stringify(response));
     } catch (err) {
       console.error("Failed to fetch board", err);
     }
@@ -72,4 +72,3 @@ export const putBoardData = (
   };
   fetchData();
 };
-
