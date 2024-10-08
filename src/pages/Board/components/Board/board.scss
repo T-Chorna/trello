@@ -28,7 +28,7 @@
   margin:0;
   font-weight: bolder;
   font-size: 110px;
-  line-height: 1,5;
+  line-height: 1;
   text-align: center;
   color: var(--title-color);
 }
@@ -110,4 +110,12 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+}
+
+.header-link{
+  text-decoration: none;
+  font-size: 40px;
+  margin-right: 20px;
+  font-weight: bold;
+  color: var(--title-color);
 }

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import List from "./components/Lists/List";
 import "./components/Board/board.scss";
 import { Button } from "./components/Button/Button";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import instance from "../../api/request";
 import { EditBoardInput } from "./components/EditInputs/EditBoardInput";
 import { CreateListModal } from "./components/EditInputs/CreateListModal";
@@ -239,7 +239,32 @@ export const Board = () => {
           >
             <img src="/settings.png" alt=">>" height={40} />
           </Button>
-          {isOpenEditIntup ? (
+          {/* {isOpenEditIntup ? (
+            <EditBoardInput
+              value={title}
+              closeInputFunc={setIsOpenEditInput}
+              saveInputValueFunc={saveNewTitle}
+            />
+          ) : (
+            <h1 className="board-title" onClick={openEditInput}>
+              {title}
+            </h1>
+          )} */}
+          <div>
+            <Link to="/" className="header-link">Перейти на головну</Link>
+            <Button
+              title="Вийти"
+              name="log-out-btn"
+              handleClickFunc={() => {
+                console.log("logout");
+              }}
+            >
+              Вийти
+            </Button>
+          </div>
+        </header>
+
+        {isOpenEditIntup ? (
             <EditBoardInput
               value={title}
               closeInputFunc={setIsOpenEditInput}
@@ -250,17 +275,7 @@ export const Board = () => {
               {title}
             </h1>
           )}
-          <Button
-            title="Вийти"
-            name="log-out-btn"
-            handleClickFunc={() => {
-              console.log("logout");
-            }}
-          >
-            Вийти
-          </Button>
-        </header>
-
+          
         <Sidebar
           isSidebarVisible={sidebarIsOpen}
           sidebarRef={sidebarRef}

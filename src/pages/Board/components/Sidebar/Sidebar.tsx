@@ -1,6 +1,8 @@
 import { RefObject, useEffect, useState } from "react";
 import "./Sidebar.scss";
 import { Button } from "../Button/Button";
+import instance from "../../../../api/request";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface SidebarProps {
   isSidebarVisible: boolean;
@@ -42,6 +44,8 @@ export const Sidebar = ({
   const [backgroundImg, setBackgroundImg] = useState('');
   const [textColor, setTextColor] = useState('');
   const [listColor, setListColor] = useState('');
+  const { board_id } = useParams();
+  const navigate = useNavigate(); 
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]; // Отримуємо файл
@@ -102,6 +106,23 @@ export const Sidebar = ({
     });
     updateLists(listTitles)
   };
+
+  const handleDeleteBoard = () => {
+    const fetchData = async () => {
+      try {
+        const deleteResponse = await instance.delete(`board/${board_id}`);
+        if (deleteResponse) {
+          navigate('/'); 
+        } else {
+            console.error('Delete request failed');
+        }
+      } catch (err) {
+        console.error("Failed to fetch board", err);
+      }
+    };
+
+    fetchData();
+  }
 
   useEffect(()=>{
     setListTitles([...lists])
@@ -206,7 +227,8 @@ export const Sidebar = ({
           className="colorInput"
         />
       </label>
-      <Button title={"Зберегти налаштування"} name={"btn-save-settings"} handleClickFunc={handleSaveChanges}>Зберегти</Button>
+      <Button title={"Зберегти налаштування"} name={"btn-save-settings btn-sidebar"} handleClickFunc={handleSaveChanges}>Зберегти зміни</Button>
+      <Button title={"Видалити дошку"} name={"btn-delete-board btn-sidebar"} handleClickFunc={handleDeleteBoard}>Видалити дошку</Button>
     </div>
   );
 };

@@ -62,9 +62,23 @@
     cursor: pointer;
   }
 
-  .btn-save-settings{
-    padding: 4px 40px;
-    margin: 40px auto;
+  .btn-sidebar{
+    width: 80%;
     cursor: pointer;
+  }
+
+  .btn-save-settings{
+    // padding: 4px 40px;
+    margin: 40px auto 0 auto;
+  }
+
+  .btn-delete-board{
+    margin: 8px auto;
+    border-color: red;
+    color: red;
+  }
+
+  .btn-delete-board:hover{
+    border-color: red;
   }
   
