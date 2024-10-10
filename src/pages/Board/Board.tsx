@@ -116,13 +116,9 @@ export const Board = () => {
           title: newListTitle,
           position: newListPosition,
         };
-        const putResponse = await instance.post(`board/${board_id}/list`, data);
-        if (!putResponse) return;
-        const getResponse = (await instance.get(
-          `board/${board_id}`,
-        )) as BoardData;
-        setTitleData(getResponse.title);
-        setLists(getResponse.lists);
+        const postResponse = await instance.post(`board/${board_id}/list`, data);
+        if (!postResponse) return;
+        updateBoard()
       } catch (err) {
         console.error("Failed to fetch board", err);
       }
@@ -160,6 +156,18 @@ export const Board = () => {
       try {
         const deleteResponse = await instance.delete(`board/${board_id}/list/${listId}`);
         if (!deleteResponse) return;
+        updateBoard()
+      } catch (err) {
+        console.error("Failed to fetch board", err);
+      }
+    };
+
+    fetchData();
+  }
+
+  const updateBoard = () => {
+    const fetchData = async () => {
+      try {
         const getResponse = (await instance.get(
           `board/${board_id}`,
         )) as BoardData;
@@ -290,7 +298,7 @@ export const Board = () => {
           {lists.map((list) => {
             return (
               <li key={list.id}>
-                <List title={list.title} cards={list.cards} listId={list.id} />
+                <List title={list.title} cards={list.cards} listId={list.id} updateBoard={updateBoard}/>
               </li>
             );
           })}
