@@ -1,16 +1,18 @@
 import { useState } from "react";
 import instance from "../../../../api/request";
 import { validateBoardTitle } from "../../../../common/utils/validateUtils";
+import { useParams } from "react-router-dom";
 
 interface ModalProps{
-    saveNewList: (listTitle:string, newListPosition:number) =>void,
+    updateBoardData: ()=>void,
     closeModal: ()=>void
 }
 
-export const CreateListModal = ({saveNewList, closeModal}:ModalProps)=>{
+export const CreateListModal = ({updateBoardData, closeModal}:ModalProps)=>{
     const [inputTitleValue, setInputTitleValue]=useState('');
     const [inputPositionValue, setInputPositionValue]=useState(1)
     const [isCorrectValue, setIsCorrectValue] = useState(true);
+    const { board_id } = useParams();
 
     const handleInputChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
       setInputTitleValue(e.target.value);
@@ -20,15 +22,32 @@ export const CreateListModal = ({saveNewList, closeModal}:ModalProps)=>{
         setInputPositionValue(+e.target.value);
       };
   
-    const handleInputSubmit = () => {
-      let isCorrect = validateBoardTitle(inputTitleValue);
-      setIsCorrectValue(isCorrect);
-      if(!isCorrect){
-        return;
-      }
-      saveNewList(inputTitleValue, inputPositionValue);
-      closeModal()
-    };
+      const handleInputSubmit = async () => {  // Робимо метод async
+        let isCorrect = validateBoardTitle(inputTitleValue);
+        setIsCorrectValue(isCorrect);
+        if (!isCorrect) {
+          return;
+        }
+        
+        // Використовуємо await, щоб дочекатися завершення addList
+        await addList(inputTitleValue, inputPositionValue); 
+        
+        updateBoardData(); 
+        closeModal();
+      };
+      
+      const addList = async (listTitle:string, listPosition:number) => {  // async функція
+        try {
+          const data = {
+            title: listTitle,
+            position: listPosition,
+          };
+          const postResponse = await instance.post(`board/${board_id}/list`, data);
+          if (!postResponse) return;
+        } catch (err) {
+          console.error("Failed to fetch board", err);
+        }
+      };
   
   
     return (

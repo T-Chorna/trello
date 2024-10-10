@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import instance from "../../../../api/request";
 import { validateBoardTitle } from "../../../../common/utils/validateUtils";
+import { ICard } from "../../../../common/interfaces/ICard";
 
 interface ModalProps{
-  card: CardData,
+  card: ICard,
   saveCard: (cardTitle:string, cardPosition:number, cardDescription:string, cardDeadline:string) =>void,
   closeModal: ()=>void
 }
 
-interface CardData{
-  title: string,
-  position: number,
-  description: string,
-  deadline: string,
-}
+// interface CardData{
+//   title: string,
+//   position: number,
+//   description: string,
+//   deadline: string,
+// }
 /**{
   title: "to wash a cat",
   list_id: 2,
@@ -61,7 +62,7 @@ export const CreateCardModal = ({card, saveCard, closeModal}:ModalProps)=>{
       setInputTitleValue(card.title);
       setInputPositionValue(card.position);
       setInputDescriptionValue(card.description);
-      setInputDeadlineValue(card.deadline);
+      setInputDeadlineValue(card.custom.deadline);
     },[])
   
   
@@ -94,7 +95,7 @@ export const CreateCardModal = ({card, saveCard, closeModal}:ModalProps)=>{
             onChange={handleInputChangeDescription} 
             placeholder="Введіть опис"
           />
-          <label htmlFor="deadline">Введіть опис</label>
+          <label htmlFor="deadline">Вкажіть дедлайн</label>
           <input 
             type="datetime-local" 
             value={inputDeadlineValue}

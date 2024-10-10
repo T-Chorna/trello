@@ -51,6 +51,8 @@
     transform: rotate(-2deg); /* Легкий наклон для естественности */
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Тень для записок */
     transition: box-shadow 1s;
+    display: flex;
+    flex-direction: column;
 }
 
 .board-list>li:hover{

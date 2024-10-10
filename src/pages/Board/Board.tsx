@@ -8,48 +8,15 @@ import { EditBoardInput } from "./components/EditInputs/EditBoardInput";
 import { CreateListModal } from "./components/EditInputs/CreateListModal";
 import { Sidebar } from "./components/Sidebar/Sidebar";
 import { darken } from "polished";
-import { getBoardData, putBoardData } from "../../api/clientRequest";
+import { BoardData } from "../../common/interfaces/BoardData";
+import { ListData } from "../../common/interfaces/ListData";
+import { StyleSettings } from "../../common/interfaces/StyleSettings";
 
-interface BoardData {
-  title: string;
-  custom?: any;
-  users: User[];
-  lists: List[];
-}
 
-interface User {
-  id: number;
-  username: string;
-}
-
-interface List {
-  id: number;
-  title: string;
-  cards: Card[];
-}
-
-interface Card {
-  id: number;
-  title: string;
-  color: string;
-  description: string;
-  custom: {
-    deadline: string;
-  };
-  users: number[];
-  created_at: number;
-}
-
-interface StyleSettings {
-  borderColor: string;
-  backgroundImg: string;
-  textColor: string;
-  listColor: string;
-}
 
 export const Board = () => {
   const [title, setTitleData] = useState<string>("");
-  const [lists, setLists] = useState<List[]>([]);
+  const [lists, setLists] = useState<ListData[]>([]);
   const [isOpenEditIntup, setIsOpenEditInput] = useState<boolean>(false);
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
   const [sidebarIsOpen, setSidebarIsOpen] = useState<boolean>(false);
@@ -68,17 +35,6 @@ export const Board = () => {
     setIsOpenEditInput(true);
   };
 
-  const saveNewTitle = (newTitle: string) => {
-    if (!board_id) return;
-    putBoardData(
-      { title: newTitle },
-      board_id,
-      setTitleData,
-      setLists,
-      setStyles,
-    );
-  };
-
   const toggleModal = () => {
     setModalIsOpen(!modalIsOpen);
   };
@@ -87,85 +43,17 @@ export const Board = () => {
     setSidebarIsOpen(!sidebarIsOpen);
   };
 
-  const saveSettings = (changes: {
-    lists: {
-      id: number;
-      title: string;
-    }[];
-    borderColor: string;
-    backgroundImg: string;
-    textColor: string;
-    listColor: string;
-  }) => {
-    toggleSidebar();
-    const styles = {
-      borderColor: changes.borderColor,
-      backgroundImg: changes.backgroundImg,
-      textColor: changes.textColor,
-      listColor: changes.listColor,
-    };
-    const dataForPut = { title: title, custom: { styles: styles } };
-    if (!board_id) return;
-    putBoardData(dataForPut, board_id, setTitleData, setLists, setStyles);
-  };
-
-  const addList = (newListTitle: string, newListPosition: number) => {
-    const fetchData = async () => {
-      try {
-        const data = {
-          title: newListTitle,
-          position: newListPosition,
-        };
-        const postResponse = await instance.post(`board/${board_id}/list`, data);
-        if (!postResponse) return;
-        updateBoard()
-      } catch (err) {
-        console.error("Failed to fetch board", err);
-      }
-    };
-
-    fetchData();
-  };
-
-  const updateLists = (lists:{id:number, title:string}[])=>{
-    const fetchData = async () => {
-      try {
-        const data = lists.map((list, index)=>{
-          return {
-            id: list.id,
-            position: index+1
-          }
-        })
-        const putResponse = await instance.put(`board/${board_id}/list`, data);
-        if (!putResponse) return;
-        const getResponse = (await instance.get(
-          `board/${board_id}`,
-        )) as BoardData;
-        setTitleData(getResponse.title);
-        setLists(getResponse.lists);
-      } catch (err) {
-        console.error("Failed to fetch board", err);
-      }
-    };
-
-    fetchData();
+  const deleteList = async (listId:number) => {
+    try {
+      const deleteResponse = await instance.delete(`board/${board_id}/list/${listId}`);
+      if (!deleteResponse) return;
+      updateBoardData()
+    } catch (err) {
+      console.error("Failed to fetch board", err);
+    }
   }
 
-  const deleteList = (listId:number) => {
-    const fetchData = async () => {
-      try {
-        const deleteResponse = await instance.delete(`board/${board_id}/list/${listId}`);
-        if (!deleteResponse) return;
-        updateBoard()
-      } catch (err) {
-        console.error("Failed to fetch board", err);
-      }
-    };
-
-    fetchData();
-  }
-
-  const updateBoard = () => {
+  const updateBoardData = () => {
     const fetchData = async () => {
       try {
         const getResponse = (await instance.get(
@@ -173,6 +61,10 @@ export const Board = () => {
         )) as BoardData;
         setTitleData(getResponse.title);
         setLists(getResponse.lists);
+        if(getResponse.custom?.styles){
+          setStyles(getResponse.custom.styles);
+        }
+        console.log('update');
       } catch (err) {
         console.error("Failed to fetch board", err);
       }
@@ -207,12 +99,12 @@ export const Board = () => {
       "--board-background",
       `url(${styles.backgroundImg})`,
     );
-    console.log("Styles updated:", styles);
+    // console.log("Styles updated:", JSON.stringify(styles));
   }, [styles]);
 
   useEffect(() => {
     if (!board_id) return;
-    getBoardData(board_id, setTitleData, setLists, setStyles);
+    updateBoardData()
   }, []);
 
   // Ховаємо сайдбар при кліку поза ним
@@ -247,17 +139,6 @@ export const Board = () => {
           >
             <img src="/settings.png" alt=">>" height={40} />
           </Button>
-          {/* {isOpenEditIntup ? (
-            <EditBoardInput
-              value={title}
-              closeInputFunc={setIsOpenEditInput}
-              saveInputValueFunc={saveNewTitle}
-            />
-          ) : (
-            <h1 className="board-title" onClick={openEditInput}>
-              {title}
-            </h1>
-          )} */}
           <div>
             <Link to="/" className="header-link">Перейти на головну</Link>
             <Button
@@ -276,7 +157,7 @@ export const Board = () => {
             <EditBoardInput
               value={title}
               closeInputFunc={setIsOpenEditInput}
-              saveInputValueFunc={saveNewTitle}
+              updateBoardData={updateBoardData}
             />
           ) : (
             <h1 className="board-title" onClick={openEditInput}>
@@ -287,10 +168,10 @@ export const Board = () => {
         <Sidebar
           isSidebarVisible={sidebarIsOpen}
           sidebarRef={sidebarRef}
-          saveChange={saveSettings}
           styles={styles}
           lists={lists}
-          updateLists={updateLists}
+          updateBoardData={updateBoardData}
+          toggleSidebar={toggleSidebar}
           deleteList={deleteList}
         />
 
@@ -298,7 +179,7 @@ export const Board = () => {
           {lists.map((list) => {
             return (
               <li key={list.id}>
-                <List title={list.title} cards={list.cards} listId={list.id} updateBoard={updateBoard}/>
+                <List title={list.title} cards={list.cards} listId={list.id} updateBoardData={updateBoardData}/>
               </li>
             );
           })}
@@ -312,7 +193,7 @@ export const Board = () => {
         </Button>
       </div>
       {modalIsOpen && (
-        <CreateListModal saveNewList={addList} closeModal={toggleModal} />
+        <CreateListModal updateBoardData={updateBoardData} closeModal={toggleModal} />
       )}
     </>
   );

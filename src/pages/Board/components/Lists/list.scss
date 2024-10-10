@@ -38,3 +38,22 @@ h2{
   opacity: 1;
   border: 2px solid var(--board-border-color);
 }
+
+.btn-delete-list{
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  align-self: end;
+}
+
+.btn-delete-list:hover{
+  border:none;
+}
+
+.btn-delete-list>img{
+  width: 1vw;
+  height: 1vw;
+  min-width: 20px;
+  min-height: 20px;
+}

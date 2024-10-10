@@ -3,43 +3,35 @@ import "./Sidebar.scss";
 import { Button } from "../Button/Button";
 import instance from "../../../../api/request";
 import { useNavigate, useParams } from "react-router-dom";
+import { ListData } from "../../../../common/interfaces/ListData";
 
 interface SidebarProps {
   isSidebarVisible: boolean;
   sidebarRef: RefObject<HTMLDivElement>;
-  saveChange: (changes: {
-    lists: List[];
-    borderColor: string;
-    backgroundImg: string;
-    textColor: string;
-    listColor: string;
-  },) => void;
   styles: {
     borderColor: string;
     backgroundImg: string;
     textColor: string;
     listColor: string; 
   };
-  lists: List[];
-  updateLists: (lists:List[])=>void;
+  lists: ListData[];
+  updateBoardData: ()=>void,
+  toggleSidebar: ()=>void,
   deleteList: (listId:number)=>void;
 }
 
-interface List {
-  id: number;
-  title: string;
-}
 
 export const Sidebar = ({
   isSidebarVisible,
   sidebarRef,
-  saveChange,
   styles,
   lists,
-  updateLists,
+  // updateLists,
+  updateBoardData,
+  toggleSidebar,
   deleteList
 }: SidebarProps) => {
-  const [listTitles, setListTitles] = useState<List[]>([]);
+  const [listTitles, setListTitles] = useState<ListData[]>([]);
   const [borderColor, setBorderColor] = useState('');
   const [backgroundImg, setBackgroundImg] = useState('');
   const [textColor, setTextColor] = useState('');
@@ -77,51 +69,70 @@ export const Sidebar = ({
     setListColor(event.target.value);
   };
 
+  //Функція для обміну місцями елементів масиву
   const swapAdjacent = (index: number) => {
     let array = [...listTitles];
     if (index < 0 || index >= array.length - 1) {
       return;
     }
-
-    // Обмін місцями
     [array[index], array[index + 1]] = [array[index + 1], array[index]];
     setListTitles(array);
   };
 
-  const deleteElementByIndex = (index: number) => {
-    // let array = [...listTitles];
-    // array.splice(index, 1);
-
-    // setListTitles(array);
-    deleteList(listTitles[index].id)
+  const handleSaveChanges = async () => {
+    toggleSidebar();
+    await saveSettings();
+    await updateLists(listTitles);
+    updateBoardData();
   };
 
-  const handleSaveChanges = () => {
-    saveChange({
-      lists: listTitles,
-      borderColor: borderColor,
-      backgroundImg: backgroundImg,
-      textColor: textColor,
-      listColor: listColor,
-    });
-    updateLists(listTitles)
-  };
-
-  const handleDeleteBoard = () => {
-    const fetchData = async () => {
-      try {
-        const deleteResponse = await instance.delete(`board/${board_id}`);
-        if (deleteResponse) {
-          navigate('/'); 
-        } else {
-            console.error('Delete request failed');
-        }
-      } catch (err) {
-        console.error("Failed to fetch board", err);
+  const handleDeleteBoard = async () => {
+    try {
+      const deleteResponse = await instance.delete(`board/${board_id}`);
+      if (deleteResponse) {
+        navigate('/'); 
+      } else {
+          console.error('Delete request failed');
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch board", err);
+    }
+  }
 
-    fetchData();
+  const updateLists = async (lists:{id:number, title:string}[])=>{
+    try {
+      const data = lists.map((list, index)=>{
+        return {
+          id: list.id,
+          position: index+1
+        }
+      })
+      const putResponse = await instance.put(`board/${board_id}/list`, data);
+    } catch (err) {
+      console.error("Failed to fetch board", err);
+    }
+  }
+
+  const saveSettings = async () => {
+    try {
+      const data = { custom: { styles: {
+        borderColor: borderColor,
+        backgroundImg: backgroundImg,
+        textColor: textColor,
+        listColor: listColor,
+      } } };
+      if (!board_id) return;
+      const putResponse = await instance.put(`board/${board_id}`, data);
+    } catch (err) {
+      console.error("Failed to fetch board", err);
+    }
+  };
+
+  const settingInitialStyleValues=()=>{
+    setBorderColor(styles.borderColor);
+    setBackgroundImg(styles.backgroundImg);
+    setTextColor(styles.textColor);
+    setListColor(styles.listColor);
   }
 
   useEffect(()=>{
@@ -129,17 +140,11 @@ export const Sidebar = ({
   },[lists])
 
   useEffect(()=>{
-    setBorderColor(styles.borderColor);
-    setBackgroundImg(styles.backgroundImg);
-    setTextColor(styles.textColor);
-    setListColor(styles.listColor);
+    settingInitialStyleValues()
   },[styles])
 
   useEffect(()=>{
-    setBorderColor(styles.borderColor);
-    setBackgroundImg(styles.backgroundImg);
-    setTextColor(styles.textColor);
-    setListColor(styles.listColor);
+    settingInitialStyleValues()
     setListTitles([...lists])
   },[isSidebarVisible])
 
@@ -173,15 +178,6 @@ export const Sidebar = ({
                   }}
                 >
                   <img src="/arrow-down.jpg" alt=">" width={10} height={10} />
-                </Button>
-                <Button
-                  title={"Видалити"}
-                  name={"btn-delete-list"}
-                  handleClickFunc={() => {
-                    deleteElementByIndex(index);
-                  }}
-                >
-                  <img src="/redCross.png" alt="X" width={10} height={10} />
                 </Button>
               </div>
             </li>
