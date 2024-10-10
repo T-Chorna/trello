@@ -2,11 +2,15 @@ import { useEffect, useState } from "react";
 import instance from "../../../../api/request";
 import { validateBoardTitle } from "../../../../common/utils/validateUtils";
 import { ICard } from "../../../../common/interfaces/ICard";
+import { useParams } from "react-router-dom";
 
 interface ModalProps{
   card: ICard,
-  saveCard: (cardTitle:string, cardPosition:number, cardDescription:string, cardDeadline:string) =>void,
-  closeModal: ()=>void
+  status: 'add' | 'edit',
+  listId:number,
+  // saveCard: (cardTitle:string, cardPosition:number, cardDescription:string, cardDeadline:string) =>void,
+  closeModal: ()=>void,
+  updateBoardData: ()=>void
 }
 
 // interface CardData{
@@ -25,12 +29,13 @@ interface ModalProps{
   }
 }
  */
-export const CreateCardModal = ({card, saveCard, closeModal}:ModalProps)=>{
+export const CreateCardModal = ({card, status, listId, updateBoardData, closeModal}:ModalProps)=>{
     const [inputTitleValue, setInputTitleValue]=useState('');
     const [inputPositionValue, setInputPositionValue]=useState(1);
     const [inputDescriptionValue, setInputDescriptionValue]=useState('');
     const [inputDeadlineValue, setInputDeadlineValue]=useState('2024-10-10')
     const [isCorrectValue, setIsCorrectValue] = useState(true);
+    const { board_id } = useParams();
 
     const handleInputChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
       setInputTitleValue(e.target.value);
@@ -48,15 +53,57 @@ export const CreateCardModal = ({card, saveCard, closeModal}:ModalProps)=>{
       setInputDeadlineValue(e.target.value);
     }
   
-    const handleInputSubmit = () => {
+    const handleInputSubmit = async () => {
       let isCorrect = validateBoardTitle(inputTitleValue);
       setIsCorrectValue(isCorrect);
       if(!isCorrect){
         return;
       }
-      saveCard(inputTitleValue, inputPositionValue, inputDescriptionValue, inputDeadlineValue);
+      status === 'add' ? await addCard() : await editCard();
       closeModal()
+      updateBoardData()
     };
+
+    const addCard = async () => {
+      try {
+        const data = {
+          title: inputTitleValue,
+          list_id: listId,
+          position: inputPositionValue,
+          description: inputDescriptionValue,
+          custom: {
+            deadline: inputDeadlineValue,
+          },
+        };
+        console.log('add card');
+        const postResponse = await instance.post(
+          `board/${board_id}/card`,
+          data,
+        );
+      } catch (err) {
+        console.error("Failed to fetch board", err);
+      }
+    }
+    const editCard = async () => {
+      try {
+        const data = {
+          title: inputTitleValue,
+          list_id: listId,
+          position: inputPositionValue,
+          description: inputDescriptionValue,
+          custom: {
+            deadline: inputDeadlineValue,
+          },
+        };
+        console.log('edit card');
+        const putResponse = await instance.put(
+          `board/${board_id}/card/${card.id}`,
+          data,
+        );
+      } catch (err) {
+        console.error("Failed to fetch board", err);
+      }
+    }
 
     useEffect(()=>{
       setInputTitleValue(card.title);
@@ -69,7 +116,7 @@ export const CreateCardModal = ({card, saveCard, closeModal}:ModalProps)=>{
     return (
       <div className="modal-overlay">
         <div className="modal">
-          <h2>Додати список</h2>
+          {status === 'add'?<h2>Додати список</h2>:<h2>Картка</h2>}
           <label htmlFor="title">Введіть назву</label>
           <input 
             type="text" 
@@ -106,7 +153,7 @@ export const CreateCardModal = ({card, saveCard, closeModal}:ModalProps)=>{
           {!isCorrectValue && <p>Назва картки не повинна бути порожньою і може містити лише літери, цифри, пробіли, тире, крапки та підкреслення.</p>}
           <div className="modal-btns-container">
             <button onClick={closeModal} className="close-btn">Закрити</button>
-            <button onClick={handleInputSubmit} className="submit-btn">Додати</button>          
+            <button onClick={handleInputSubmit} className="submit-btn">{status === 'add' ? 'Додати' : 'Зберегти'}</button>          
           </div>
   
         </div>

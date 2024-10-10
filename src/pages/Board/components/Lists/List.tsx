@@ -23,6 +23,7 @@ interface ListProps {
 
 const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
+  const [modalStatus, setModalStatus] = useState<'add' | 'edit'>('add');
   const [editCardData, setEditCardData] = useState<ICard>({
     title: "",
     position: 1,
@@ -38,36 +39,7 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
   // saveCard: (cardTitle:string, cardPosition:number, cardDescription:string, cardDeadline:string) =>void,
   // closeModal: ()=>void
 
-  const addCard = (
-    cardTitle: string,
-    cardPosition: number,
-    cardDescription: string,
-    cardDeadline: string,
-  ) => {
-    const fetchData = async () => {
-      try {
-        const data = {
-          title: cardTitle,
-          list_id: listId,
-          position: cardPosition,
-          description: cardDescription,
-          custom: {
-            deadline: cardDeadline,
-          },
-        };
-        const postResponse = await instance.post(
-          `board/${board_id}/card`,
-          data,
-        );
-        if (!postResponse) return;
-        updateBoardData();
-      } catch (err) {
-        console.error("Failed to fetch board", err);
-      }
-    };
 
-    fetchData();
-  };
 
   const toggleModal = () => {
     setModalIsOpen(!modalIsOpen);
@@ -82,6 +54,12 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
       console.error("Failed to fetch board", err);
     }
   };
+
+  const handleClickOnCard = (card:ICard)=>{
+    setModalStatus('edit');
+    setEditCardData(card);
+    setModalIsOpen(true);
+  }
 
   return (
     <>
@@ -99,7 +77,7 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
       <ul className="cards-list">
         {cards.map((card) => {
           return (
-            <li key={card.id}>
+            <li key={card.id} onClick={()=>{handleClickOnCard(card)}}>
               <Card title={card.title} />
             </li>
           );
@@ -115,7 +93,9 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
       {modalIsOpen && (
         <CreateCardModal
           card={editCardData}
-          saveCard={addCard}
+          status={modalStatus}
+          listId={listId}
+          updateBoardData={updateBoardData}
           closeModal={toggleModal}
         />
       )}
