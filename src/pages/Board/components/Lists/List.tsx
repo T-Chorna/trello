@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { CreateCardModal } from "../EditInputs/CreateCardModal";
 import instance from "../../../../api/request";
 import { useParams } from "react-router-dom";
+import { handleError, showMessageDelete, showSuccessMessage } from "../../../../common/utils/message";
 
 interface ListProps {
   listId: number;
@@ -13,13 +14,6 @@ interface ListProps {
   cards: ICard[];
   updateBoardData: () => void;
 }
-
-// interface CardData{
-//   title: string,
-//   position: number,
-//   description: string,
-//   deadline: string,
-// }
 
 const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
@@ -32,26 +26,25 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
       deadline: "",
     },
   });
-  const createNewCard = useRef(true);
   const { board_id } = useParams();
-
-  // card: CardData,
-  // saveCard: (cardTitle:string, cardPosition:number, cardDescription:string, cardDeadline:string) =>void,
-  // closeModal: ()=>void
-
-
 
   const toggleModal = () => {
     setModalIsOpen(!modalIsOpen);
   };
 
   const deleteList = async () => {
+    // Очікуємо на результат перед тим, як продовжувати
+    const confirmation = await showMessageDelete('Ви впевнені, що хочете видалити список?');
+    if (!confirmation) { 
+      return; // Якщо користувач натиснув "Скасувати", припиняємо виконання
+    }
     try {
       const deleteResponse = await instance.delete(
         `board/${board_id}/list/${listId}`,
       );
+      showSuccessMessage('Видалено!', 'Ваш список був видалений.');
     } catch (err) {
-      console.error("Failed to fetch board", err);
+      handleError(err);
     }
   };
 

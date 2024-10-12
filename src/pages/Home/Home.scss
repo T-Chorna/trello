@@ -16,6 +16,12 @@
   color: #44352b;
 }
 
+.home>header{
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 20px;
+}
+
 .home-title{
   margin:0;
   font-weight: bolder;

@@ -11,6 +11,7 @@ import { darken } from "polished";
 import { BoardData } from "../../common/interfaces/BoardData";
 import { ListData } from "../../common/interfaces/ListData";
 import { StyleSettings } from "../../common/interfaces/StyleSettings";
+import { handleError } from "../../common/utils/message";
 
 
 
@@ -29,7 +30,6 @@ export const Board = () => {
 
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { board_id } = useParams();
-  const pushPinsImg = `<img src="/push-pins.png" alt="+"/>`;
 
   const openEditInput = () => {
     setIsOpenEditInput(true);
@@ -43,34 +43,20 @@ export const Board = () => {
     setSidebarIsOpen(!sidebarIsOpen);
   };
 
-  const deleteList = async (listId:number) => {
+  const updateBoardData = async () => {
     try {
-      const deleteResponse = await instance.delete(`board/${board_id}/list/${listId}`);
-      if (!deleteResponse) return;
-      updateBoardData()
-    } catch (err) {
-      console.error("Failed to fetch board", err);
-    }
-  }
-
-  const updateBoardData = () => {
-    const fetchData = async () => {
-      try {
-        const getResponse = (await instance.get(
-          `board/${board_id}`,
-        )) as BoardData;
-        setTitleData(getResponse.title);
-        setLists(getResponse.lists);
-        if(getResponse.custom?.styles){
-          setStyles(getResponse.custom.styles);
-        }
-        console.log('update');
-      } catch (err) {
-        console.error("Failed to fetch board", err);
+      const getResponse = (await instance.get(
+        `board/${board_id}`,
+      )) as BoardData;
+      setTitleData(getResponse.title);
+      setLists(getResponse.lists);
+      if(getResponse.custom?.styles){
+        setStyles(getResponse.custom.styles);
       }
-    };
-
-    fetchData();
+    } catch (err) {
+      handleError(err);
+    }
+    
   }
 
   useEffect(() => {
@@ -172,7 +158,6 @@ export const Board = () => {
           lists={lists}
           updateBoardData={updateBoardData}
           toggleSidebar={toggleSidebar}
-          deleteList={deleteList}
         />
 
         <ul className="board-list">

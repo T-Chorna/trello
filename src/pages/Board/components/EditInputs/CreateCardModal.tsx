@@ -3,32 +3,16 @@ import instance from "../../../../api/request";
 import { validateBoardTitle } from "../../../../common/utils/validateUtils";
 import { ICard } from "../../../../common/interfaces/ICard";
 import { useParams } from "react-router-dom";
+import { handleError } from "../../../../common/utils/message";
 
 interface ModalProps{
   card: ICard,
   status: 'add' | 'edit',
   listId:number,
-  // saveCard: (cardTitle:string, cardPosition:number, cardDescription:string, cardDeadline:string) =>void,
   closeModal: ()=>void,
   updateBoardData: ()=>void
 }
 
-// interface CardData{
-//   title: string,
-//   position: number,
-//   description: string,
-//   deadline: string,
-// }
-/**{
-  title: "to wash a cat",
-  list_id: 2,
-  position: 5,
-  description: "washing process",
-  custom: {
-    deadline: "2022-08-31 12:00"
-  }
-}
- */
 export const CreateCardModal = ({card, status, listId, updateBoardData, closeModal}:ModalProps)=>{
     const [inputTitleValue, setInputTitleValue]=useState('');
     const [inputPositionValue, setInputPositionValue]=useState(1);
@@ -75,13 +59,12 @@ export const CreateCardModal = ({card, status, listId, updateBoardData, closeMod
             deadline: inputDeadlineValue,
           },
         };
-        console.log('add card');
         const postResponse = await instance.post(
           `board/${board_id}/card`,
           data,
         );
       } catch (err) {
-        console.error("Failed to fetch board", err);
+        handleError(err);
       }
     }
     const editCard = async () => {
@@ -95,13 +78,12 @@ export const CreateCardModal = ({card, status, listId, updateBoardData, closeMod
             deadline: inputDeadlineValue,
           },
         };
-        console.log('edit card');
         const putResponse = await instance.put(
           `board/${board_id}/card/${card.id}`,
           data,
         );
       } catch (err) {
-        console.error("Failed to fetch board", err);
+        handleError(err);
       }
     }
 
@@ -115,8 +97,8 @@ export const CreateCardModal = ({card, status, listId, updateBoardData, closeMod
   
     return (
       <div className="modal-overlay">
-        <div className="modal">
-          {status === 'add'?<h2>Додати список</h2>:<h2>Картка</h2>}
+        <div className="modal add-card-modal">
+          {status === 'add'?<h2>Додати картку</h2>:<h2>Картка</h2>}
           <label htmlFor="title">Введіть назву</label>
           <input 
             type="text" 

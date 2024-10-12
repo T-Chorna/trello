@@ -4,6 +4,7 @@ import { Button } from "../Button/Button";
 import instance from "../../../../api/request";
 import { useNavigate, useParams } from "react-router-dom";
 import { ListData } from "../../../../common/interfaces/ListData";
+import { handleError, showMessageDelete, showSuccessMessage } from "../../../../common/utils/message";
 
 interface SidebarProps {
   isSidebarVisible: boolean;
@@ -16,8 +17,7 @@ interface SidebarProps {
   };
   lists: ListData[];
   updateBoardData: ()=>void,
-  toggleSidebar: ()=>void,
-  deleteList: (listId:number)=>void;
+  toggleSidebar: ()=>void
 }
 
 
@@ -26,10 +26,8 @@ export const Sidebar = ({
   sidebarRef,
   styles,
   lists,
-  // updateLists,
   updateBoardData,
-  toggleSidebar,
-  deleteList
+  toggleSidebar
 }: SidebarProps) => {
   const [listTitles, setListTitles] = useState<ListData[]>([]);
   const [borderColor, setBorderColor] = useState('');
@@ -86,18 +84,22 @@ export const Sidebar = ({
     updateBoardData();
   };
 
-  const handleDeleteBoard = async () => {
+  const handleDeleteBoard = async () => { 
+    // Очікуємо на результат перед тим, як продовжувати
+    const confirmation = await showMessageDelete('Ви впевнені, що хочете видалити дошку?');
+    if (!confirmation) { 
+      return; // Якщо користувач натиснув "Скасувати", припиняємо виконання
+    }
     try {
       const deleteResponse = await instance.delete(`board/${board_id}`);
       if (deleteResponse) {
         navigate('/'); 
-      } else {
-          console.error('Delete request failed');
       }
+      showSuccessMessage('Видалено!', 'Ваша дошка була видалена.');
     } catch (err) {
-      console.error("Failed to fetch board", err);
+      handleError(err);
     }
-  }
+  };
 
   const updateLists = async (lists:{id:number, title:string}[])=>{
     try {
