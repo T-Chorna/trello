@@ -174,7 +174,7 @@ export const Board = () => {
           name="add-list-btn"
           handleClickFunc={toggleModal}
         >
-          <img src="/push-pins.png" alt="+" height={80} />
+          <img src="push-pins.png" alt="+" height={80} />
         </Button>
       </div>
       {modalIsOpen && (
