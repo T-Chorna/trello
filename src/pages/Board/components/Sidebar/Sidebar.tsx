@@ -170,7 +170,7 @@ export const Sidebar = ({
                     swapAdjacent(index - 1);
                   }}
                 >
-                  <img src="/arrow-up.png" alt="<" width={10} height={10} />
+                  <img src="arrow-up.png" alt="<" width={10} height={10} />
                 </Button>
                 <Button
                   title={"Донизу"}
@@ -179,7 +179,7 @@ export const Sidebar = ({
                     swapAdjacent(index);
                   }}
                 >
-                  <img src="/arrow-down.jpg" alt=">" width={10} height={10} />
+                  <img src="arrow-down.jpg" alt=">" width={10} height={10} />
                 </Button>
               </div>
             </li>

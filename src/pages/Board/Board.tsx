@@ -123,7 +123,7 @@ export const Board = () => {
             name="open-settings-btn"
             handleClickFunc={toggleSidebar}
           >
-            <img src="/settings.png" alt=">>" height={40} />
+            <img src="settings.png" alt=">>" height={40} />
           </Button>
           <div>
             <Link to="/" className="header-link">Перейти на головну</Link>

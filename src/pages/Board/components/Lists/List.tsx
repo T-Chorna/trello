@@ -64,7 +64,7 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
           updateBoardData();
         }}
       >
-        <img src="/redCross.png" alt="X" width={10} height={10} />
+        <img src="redCross.png" alt="X" width={10} height={10} />
       </Button>
       <h2>{title}</h2>
       <ul className="cards-list">
