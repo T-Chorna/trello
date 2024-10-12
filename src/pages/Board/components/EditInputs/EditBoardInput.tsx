@@ -3,6 +3,7 @@ import { validateBoardTitle } from "../../../../common/utils/validateUtils";
 import '../EditInputs/EditInputs.scss'
 import instance from "../../../../api/request";
 import { useParams } from "react-router-dom";
+import { handleError } from "../../../../common/utils/message";
 
 interface EditBoardInputProps{
     value: string,
@@ -14,17 +15,17 @@ export const EditBoardInput = ({value, closeInputFunc, updateBoardData}:EditBoar
     const [inputValue, setInputValue] = useState<string>(value);
     const { board_id } = useParams();
 
-    function handleChange(e: React.ChangeEvent<HTMLInputElement>){
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
         setInputValue(e.target.value);
     }
 
-    function closeInput(){
+    const closeInput = ()=>{
         saveNewTitle(inputValue);
         updateBoardData();
         closeInputFunc(false);
     }
 
-    function saveNewTitle(newTitle:string){
+    const saveNewTitle = (newTitle:string) => {
         const isCorrectValue = validateBoardTitle(inputValue);
         if(!isCorrectValue){
             alert('Назва дошки не повинна бути порожньою і може містити лише літери, цифри, пробіли, тире, крапки та підкреслення.');
@@ -37,13 +38,13 @@ export const EditBoardInput = ({value, closeInputFunc, updateBoardData}:EditBoar
             const putResponse = await instance.put(`board/${board_id}`, data);
             if (!putResponse) return;
           } catch (err) {
-            console.error("Failed to fetch board", err);
+            handleError(err)
           }
         };
         fetchData();
     }
 
-    function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
           closeInput();
         }

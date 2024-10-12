@@ -2,6 +2,7 @@ import { useState } from "react";
 import instance from "../../../../api/request";
 import { validateBoardTitle } from "../../../../common/utils/validateUtils";
 import { useParams } from "react-router-dom";
+import { handleError } from "../../../../common/utils/message";
 
 interface ModalProps{
     updateBoardData: ()=>void,
@@ -22,32 +23,32 @@ export const CreateListModal = ({updateBoardData, closeModal}:ModalProps)=>{
         setInputPositionValue(+e.target.value);
       };
   
-      const handleInputSubmit = async () => {  // Робимо метод async
-        let isCorrect = validateBoardTitle(inputTitleValue);
-        setIsCorrectValue(isCorrect);
-        if (!isCorrect) {
-          return;
-        }
-        
-        // Використовуємо await, щоб дочекатися завершення addList
-        await addList(inputTitleValue, inputPositionValue); 
-        
-        updateBoardData(); 
-        closeModal();
-      };
+    const handleInputSubmit = async () => {  // Робимо метод async
+      let isCorrect = validateBoardTitle(inputTitleValue);
+      setIsCorrectValue(isCorrect);
+      if (!isCorrect) {
+        return;
+      }
       
-      const addList = async (listTitle:string, listPosition:number) => {  // async функція
-        try {
-          const data = {
-            title: listTitle,
-            position: listPosition,
-          };
-          const postResponse = await instance.post(`board/${board_id}/list`, data);
-          if (!postResponse) return;
-        } catch (err) {
-          console.error("Failed to fetch board", err);
-        }
-      };
+      // Використовуємо await, щоб дочекатися завершення addList
+      await addList(inputTitleValue, inputPositionValue); 
+      
+      updateBoardData(); 
+      closeModal();
+    };
+      
+    const addList = async (listTitle:string, listPosition:number) => {  // async функція
+      try {
+        const data = {
+          title: listTitle,
+          position: listPosition,
+        };
+        const postResponse = await instance.post(`board/${board_id}/list`, data);
+        if (!postResponse) return;
+      } catch (err) {
+        handleError(err)
+      }
+    };
   
   
     return (

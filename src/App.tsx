@@ -15,7 +15,6 @@ export default function App() {
     <Router>
     <Routes>
       <Route path="/" element={<Home />} />
-      {/* <Route path="/board/:board_id" element={<Board />} /> */}
       <Route path="board">
         <Route path=":board_id" element={<Board />} />
       </Route>
