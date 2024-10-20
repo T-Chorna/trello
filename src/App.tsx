@@ -1,11 +1,9 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import {
   HashRouter as Router,
   Routes,
   Route,
-  Link
 } from "react-router-dom";
 import { Board } from './pages/Board/Board';
 import { Home } from './pages/Home/Home';
