@@ -1,34 +1,104 @@
-import axios from 'axios';
-import { api } from '../common/constants';
-import NProgress from 'nprogress';
-// import 'nprogress/nprogress.css';  // Підключаємо стилі для прогрес-бару
-import './nprogress.css'
+import instance from "./instance";
+import { BoardData } from "../common/interfaces/BoardData";
+import { AllBoards } from "../common/interfaces/AllBoards";
 
-const instance = axios.create({
-  baseURL: api.baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-    Authorization: 'Bearer 123', // до цього ми ще повернемося якось потім
+const boardPath = process.env.REACT_APP_API_BOARD || '';
+const listPath = process.env.REACT_APP_API_LIST || '';
+const cardPath = process.env.REACT_APP_API_CARD || '';
+
+export const getAllBoards = async () => {
+  const res: AllBoards = await instance.get(boardPath);
+  return res;
+};
+
+export const postBoard = async (data: { title: string }) => {
+  await instance.post("board", data);
+};
+
+export const getBoard = async (boardId: string | undefined) => {
+  const res: BoardData = await instance.get(`${boardPath}/${boardId}`);
+  return res;
+};
+
+export const putBoard = async (
+  board_id: string | undefined,
+  data:
+    | {
+        custom: {
+          styles: {
+            borderColor: string;
+            backgroundImg: string;
+            textColor: string;
+            listColor: string;
+          };
+        };
+      }
+    | { title: string },
+) => {
+  await instance.put(`${boardPath}/${board_id}`, data);
+};
+
+export const deleteBoard = async (boardId: string | undefined) => {
+  return await instance.delete(`${boardPath}/${boardId}`);
+};
+
+export const postList = async (
+  boardId: string | undefined,
+  data: {
+    title: string;
+    position: number;
   },
-});
+) => {
+  await instance.post(`${boardPath}/${boardId}/${listPath}`, data);
+};
 
-// instance.interceptors.response.use((res) => res.data);
-// Додаємо інтерсептор на запит
-instance.interceptors.request.use((config) => {
-  NProgress.start();  // Запускаємо прогрес-бар при початку запиту
-  return config;
-}, (error) => {
-  NProgress.done();  // Зупиняємо прогрес-бар при помилці
-  return Promise.reject(error);
-});
+export const putLists = async (
+  boardId: string | undefined,
+  data: {
+    id: number;
+    position: number;
+  }[],
+) => {
+  await instance.put(`${boardPath}/${boardId}/${listPath}`, data);
+};
 
-// Додаємо інтерсептор на відповідь
-instance.interceptors.response.use((response) => {
-  NProgress.done();  // Зупиняємо прогрес-бар при отриманні відповіді
-  return response.data;
-}, (error) => {
-  NProgress.done();  // Зупиняємо прогрес-бар при помилці
-  return Promise.reject(error);
-});
+export const deleteList = async (
+  boardId: string | undefined,
+  listId: number,
+) => {
+  await instance.delete(`${boardPath}/${boardId}/${listPath}/${listId}`);
+};
 
-export default instance;
+export const postCard = async (
+  boardId: string | undefined,
+  data: {
+    title: string;
+    list_id: number;
+    position: number;
+    description: string;
+    custom: {
+      deadline: string;
+    };
+  },
+) => {
+  await instance.post(`${boardPath}/${boardId}/${cardPath}`, data);
+};
+
+export const putCard = async (
+  boardId: string | undefined,
+  cardId: number,
+  data: {
+    title: string;
+    list_id: number;
+    position: number;
+    description: string;
+    custom: {
+      deadline: string;
+    };
+  },
+) => {
+  await instance.put(
+    `${boardPath}/${boardId}/${cardPath}/${cardId}`,
+    data,
+  );
+};

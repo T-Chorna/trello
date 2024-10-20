@@ -2,18 +2,13 @@ import { ICard } from "../../../../common/interfaces/ICard";
 import "./list.scss";
 import { Card } from "../Card/Card";
 import { Button } from "../Button/Button";
-import { useRef, useState } from "react";
-import { CreateCardModal } from "../EditInputs/CreateCardModal";
-import instance from "../../../../api/request";
+import React, { useState } from "react";
+import { CardModal } from "../EditInputs/CardModal";
 import { useParams } from "react-router-dom";
-import { handleError, showMessageDelete, showSuccessMessage } from "../../../../common/utils/message";
+import { showMessageDelete, showSuccessMessage } from "../../../../common/utils/message";
+import { ListProps } from "../../../../common/interfaces/ListProps";
+import { deleteList } from "../../../../api/request";
 
-interface ListProps {
-  listId: number;
-  title: string;
-  cards: ICard[];
-  updateBoardData: () => void;
-}
 
 const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
   const [modalIsOpen, setModalIsOpen] = useState<boolean>(false);
@@ -30,22 +25,23 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
 
   const toggleModal = () => {
     setModalIsOpen(!modalIsOpen);
+    setEditCardData({
+      title: "",
+      position: 1,
+      description: "",
+      custom: {
+        deadline: "",
+      }})
   };
 
-  const deleteList = async () => {
-    // Очікуємо на результат перед тим, як продовжувати
+  const deleteCurrentList = async () => {
     const confirmation = await showMessageDelete('Ви впевнені, що хочете видалити список?');
     if (!confirmation) { 
-      return; // Якщо користувач натиснув "Скасувати", припиняємо виконання
+      return; 
     }
-    try {
-      const deleteResponse = await instance.delete(
-        `board/${board_id}/list/${listId}`,
-      );
-      showSuccessMessage('Видалено!', 'Ваш список був видалений.');
-    } catch (err) {
-      handleError(err);
-    }
+    await deleteList(board_id, listId);
+    showSuccessMessage('Видалено!', 'Ваш список був видалений.');
+    
   };
 
   const handleClickOnCard = (card:ICard)=>{
@@ -60,7 +56,7 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
         title={"Видалити"}
         name={"btn-delete-list"}
         handleClickFunc={async () => {
-          await deleteList();
+          await deleteCurrentList();
           updateBoardData();
         }}
       >
@@ -84,7 +80,7 @@ const List = ({ listId, title, cards, updateBoardData }: ListProps) => {
         +
       </Button>
       {modalIsOpen && (
-        <CreateCardModal
+        <CardModal
           card={editCardData}
           status={modalStatus}
           listId={listId}

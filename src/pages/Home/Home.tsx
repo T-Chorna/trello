@@ -1,17 +1,13 @@
-import { useEffect, useState } from "react";
-import { Board } from "./components/Board/Board";
+import React, { useEffect, useState } from "react";
 import "./Home.scss";
 import { Button } from "../Board/components/Button/Button";
 import { Link } from "react-router-dom";
-import instance from "../../api/request";
 import CreateBoardModal from "./components/CreateBoardModal/CreateBoardModal";
-import { showSuccessMessage, handleError } from "../../common/utils/message";
+import { showSuccessMessage } from "../../common/utils/message";
+import { BoardData } from "../../common/interfaces/BoardData";
+import { getAllBoards, postBoard } from "../../api/request";
+import defaultBackgroundImg from './texture.webp';
 
-interface BoardData {
-  id: number;
-  title: string;
-  custom?: any;
-}
 
 export const Home = () => {
   const [boards, setBoards] = useState<BoardData[]>([]);
@@ -21,29 +17,26 @@ export const Home = () => {
     setModalIsOpen(!modalIsOpen);
   };
 
-
-
   const gettingDataAbourdBoards = async ()=>{
-    try {
-      const response = await instance.get("board") as {boards: BoardData[]};
-      setBoards(response.boards);
-      
-    } catch (err:any) {
-      handleError(err);
-    }
+    const allBoards = await getAllBoards();
+    setBoards(allBoards.boards);
   }
 
   const addBoard = async (title:string) => {
-    try {
-      const data = {
-        title: title
+    const data = {
+      title: title,
+      custom: {
+        styles: {
+          borderColor: "#8B4513",
+          backgroundImg: defaultBackgroundImg,
+          textColor: "#44352b",
+          listColor: "#fffa90",
+        }
       }
-      const postResponse = await instance.post("board", data);
-      showSuccessMessage('Виконано!',  `Дошка "${title}" створена`);
-      gettingDataAbourdBoards();
-    } catch (err) {
-      handleError(err);
     }
+    await postBoard(data);
+    showSuccessMessage('Виконано!',  `Дошка "${title}" створена`);
+    gettingDataAbourdBoards();
   }
 
   useEffect(() => {
@@ -69,7 +62,7 @@ export const Home = () => {
           return (
             <li key={board.id}>
               <Link to={`/board/${board.id}`}>
-                <Board title={board.title} custom={board.custom} />
+                {board.title}
               </Link>
             </li>
           );

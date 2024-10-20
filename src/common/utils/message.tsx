@@ -4,13 +4,17 @@ export const showSuccessMessage = (messageTitle:string, messageText:string)=>{
     Swal.fire(messageTitle, messageText, 'success');
 }
 
-export const showErrorMessage = (messageTitle:string, messageText:string)=>{
-    Swal.fire({
-        icon: 'error',
-        title: messageTitle,
-        text: messageText,
-      });
+export const showErrorMessage = async (messageTitle: string, messageText: string) => {
+  await Swal.fire({
+    icon: 'error',
+    title: messageTitle,
+    text: messageText,
+    timer: 3000,
+    timerProgressBar: true, 
+    showConfirmButton: true 
+  });
 }
+
 
 const showErrorByStatus = (status:number)=>{
     switch (status) {
@@ -32,18 +36,15 @@ const showErrorByStatus = (status:number)=>{
       }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const handleError = (err:any)=>{
     console.error("Failed to fetch boards", err);
-    // Перевіряємо, чи є відповідь від сервера і чи вона містить статус-код
     if (err.response) {
       const status = err.response.status;
-      // Обробка різних статус-кодів
       showErrorByStatus(status);
     } else if (err.request) {
-      // Запит був зроблений, але не отримано відповіді (наприклад, проблеми з мережею)
       showErrorMessage('Помилка!', 'Не вдалося підключитися до сервера. Перевірте інтернет-з’єднання.');
     } else {
-      // Щось інше пішло не так
       showErrorMessage('Помилка!', 'Виникла невідома помилка. Спробуйте ще раз.');
     }
   }
@@ -59,7 +60,5 @@ export const handleError = (err:any)=>{
       confirmButtonText: 'Так, видалити!',
       cancelButtonText: 'Скасувати',
     });
-  
-    // Повертаємо true, якщо користувач підтвердив дію
     return result.isConfirmed;
   };

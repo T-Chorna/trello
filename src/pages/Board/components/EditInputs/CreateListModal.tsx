@@ -1,85 +1,83 @@
-import { useState } from "react";
-import instance from "../../../../api/request";
+import React from "react";
+import { useForm } from "react-hook-form";
 import { validateBoardTitle } from "../../../../common/utils/validateUtils";
 import { useParams } from "react-router-dom";
-import { handleError } from "../../../../common/utils/message";
+import { postList } from "../../../../api/request";
+import { CreateListModalProps } from "../../../../common/interfaces/CreateListModalProps";
 
-interface ModalProps{
-    updateBoardData: ()=>void,
-    closeModal: ()=>void
-}
+export const CreateListModal = ({ updateBoardData, closeModal }: CreateListModalProps) => {
+  const { board_id } = useParams();
 
-export const CreateListModal = ({updateBoardData, closeModal}:ModalProps)=>{
-    const [inputTitleValue, setInputTitleValue]=useState('');
-    const [inputPositionValue, setInputPositionValue]=useState(1)
-    const [isCorrectValue, setIsCorrectValue] = useState(true);
-    const { board_id } = useParams();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<{ title: string; position: number }>({
+    defaultValues: {
+      title: '',
+      position: 1,
+    },
+  });
 
-    const handleInputChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setInputTitleValue(e.target.value);
+  const onSubmit = async (data: { title: string; position: number }) => {
+    const isCorrect = validateBoardTitle(data.title);
+    if (!isCorrect) {
+      return;
+    }
+
+    const listData = {
+      title: data.title,
+      position: +data.position,
     };
 
-    const handleInputChangePosition = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputPositionValue(+e.target.value);
-      };
-  
-    const handleInputSubmit = async () => {  // Робимо метод async
-      let isCorrect = validateBoardTitle(inputTitleValue);
-      setIsCorrectValue(isCorrect);
-      if (!isCorrect) {
-        return;
-      }
-      
-      // Використовуємо await, щоб дочекатися завершення addList
-      await addList(inputTitleValue, inputPositionValue); 
-      
-      updateBoardData(); 
-      closeModal();
-    };
-      
-    const addList = async (listTitle:string, listPosition:number) => {  // async функція
-      try {
-        const data = {
-          title: listTitle,
-          position: listPosition,
-        };
-        const postResponse = await instance.post(`board/${board_id}/list`, data);
-        if (!postResponse) return;
-      } catch (err) {
-        handleError(err)
-      }
-    };
-  
-  
-    return (
-      <div className="modal-overlay">
-        <div className="modal">
-          <h2>Додати список</h2>
+    await postList(board_id, listData);
+    updateBoardData();
+    closeModal();
+    reset();
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <h2>Додати список</h2>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <label htmlFor="title">Введіть назву</label>
-          <input 
-            type="text" 
-            value={inputTitleValue}
-            name="title"
-            onChange={handleInputChangeTitle} 
-            placeholder="Введіть назву" 
+          <input
+            id="title"
+            type="text"
+            {...register("title", {
+              required: "Назва списку обов'язкова",
+              validate: validateBoardTitle,
+            })}
+            placeholder="Введіть назву"
           />
+          {errors.title && (
+            <p>Назва списку не повинна бути порожньою і може містити лише літери, цифри, пробіли, тире, крапки та підкреслення.</p>
+          )}
+
           <label htmlFor="position">Вкажіть позицію</label>
-          <input 
-            type="number" 
-            value={inputPositionValue}
-            name="position"
-            onChange={handleInputChangePosition} 
-            placeholder="Вкажіть номер позиції" 
-            min={1}
+          <input
+            id="position"
+            type="number"
+            {...register("position", {
+              required: "Позиція обов'язкова",
+              min: { value: 1, message: "Позиція повинна бути більше або дорівнювати 1" },
+            })}
+            placeholder="Вкажіть номер позиції"
           />
-          {!isCorrectValue && <p>Назва списку не повинна бути порожньою і може містити лише літери, цифри, пробіли, тире, крапки та підкреслення.</p>}
+          {errors.position && <p>{errors.position.message}</p>}
+
           <div className="modal-btns-container">
-            <button onClick={closeModal} className="close-btn">Закрити</button>
-            <button onClick={handleInputSubmit} className="submit-btn">Додати</button>          
+            <button type="button" onClick={closeModal} className="close-btn">
+              Закрити
+            </button>
+            <button type="submit" className="submit-btn">
+              Додати
+            </button>
           </div>
-  
-        </div>
+        </form>
       </div>
-  
-    );
-}
+    </div>
+  );
+};

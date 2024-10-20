@@ -1,17 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import List from "./components/Lists/List";
-import "./components/Board/board.scss";
+import "./board.scss";
 import { Button } from "./components/Button/Button";
 import { Link, useParams } from "react-router-dom";
-import instance from "../../api/request";
 import { EditBoardInput } from "./components/EditInputs/EditBoardInput";
 import { CreateListModal } from "./components/EditInputs/CreateListModal";
 import { Sidebar } from "./components/Sidebar/Sidebar";
-import { darken } from "polished";
-import { BoardData } from "../../common/interfaces/BoardData";
 import { ListData } from "../../common/interfaces/ListData";
 import { StyleSettings } from "../../common/interfaces/StyleSettings";
-import { handleError } from "../../common/utils/message";
+import { getBoard } from "../../api/request";
+import defaultBackgroundImg from './texture.webp';
+import { changeCSSProperties } from "../../common/utils/changeCssVarUtils";
+import { useClickOutside } from "../../common/hook/clickoutside";
 
 
 
@@ -23,7 +23,7 @@ export const Board = () => {
   const [sidebarIsOpen, setSidebarIsOpen] = useState<boolean>(false);
   const [styles, setStyles] = useState<StyleSettings>({
     borderColor: "#8B4513",
-    backgroundImg: "url('texture.webp')",
+    backgroundImg: defaultBackgroundImg,
     textColor: "#44352b",
     listColor: "#fffa90",
   });
@@ -44,75 +44,24 @@ export const Board = () => {
   };
 
   const updateBoardData = async () => {
-    try {
-      const getResponse = (await instance.get(
-        `board/${board_id}`,
-      )) as BoardData;
-      setTitleData(getResponse.title);
-      setLists(getResponse.lists);
-      if(getResponse.custom?.styles){
-        setStyles(getResponse.custom.styles);
+      const board = await getBoard(board_id);
+      setTitleData(board.title);
+      setLists(board.lists);
+      if(board.custom?.styles){
+        setStyles(board.custom.styles);
       }
-    } catch (err) {
-      handleError(err);
-    }
-    
+      changeCSSProperties(styles);
   }
 
   useEffect(() => {
-    if (!styles) return;
-    document.documentElement.style.setProperty(
-      "--board-border-color",
-      styles.borderColor,
-    );
-    document.documentElement.style.setProperty(
-      "--main-color",
-      styles.textColor,
-    );
-    document.documentElement.style.setProperty(
-      "--title-color",
-      darken(0.2, styles.textColor),
-    );
-    document.documentElement.style.setProperty(
-      "--sticker-color",
-      styles.listColor,
-    );
-    document.documentElement.style.setProperty(
-      "--add-card-btn-color",
-      darken(0.1, styles.listColor),
-    );
-    document.documentElement.style.setProperty(
-      "--board-background",
-      `url(${styles.backgroundImg})`,
-    );
-    // console.log("Styles updated:", JSON.stringify(styles));
+    changeCSSProperties(styles)
   }, [styles]);
 
   useEffect(() => {
-    if (!board_id) return;
-    updateBoardData()
+    updateBoardData();
   }, []);
 
-  // Ховаємо сайдбар при кліку поза ним
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      // Перевіряємо, що sidebarRef.current існує і перевіряємо, чи елемент event.target не знаходиться всередині сайдбару
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node)
-      ) {
-        setSidebarIsOpen(false);
-      }
-    };
-
-    // Додаємо обробник кліку до всього документа
-    document.addEventListener("mousedown", handleClickOutside);
-
-    // Чистимо ефект, щоб уникнути витоків пам'яті
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [sidebarIsOpen]);
+  useClickOutside(sidebarRef, () => setSidebarIsOpen(false), sidebarIsOpen);
 
   return (
     <>

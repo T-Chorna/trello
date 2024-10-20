@@ -30,6 +30,11 @@
     left: 0; /* Показуємо сайдбар */
   }
 
+  .sidebar>form{
+    display: flex;
+    flex-direction: column;
+  }
+
   .sidebarTitle{
     font-size: 40px;
     line-height: 1;

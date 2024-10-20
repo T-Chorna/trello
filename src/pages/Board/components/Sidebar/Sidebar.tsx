@@ -1,25 +1,13 @@
-import { RefObject, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import "./Sidebar.scss";
 import { Button } from "../Button/Button";
-import instance from "../../../../api/request";
 import { useNavigate, useParams } from "react-router-dom";
 import { ListData } from "../../../../common/interfaces/ListData";
-import { handleError, showMessageDelete, showSuccessMessage } from "../../../../common/utils/message";
-
-interface SidebarProps {
-  isSidebarVisible: boolean;
-  sidebarRef: RefObject<HTMLDivElement>;
-  styles: {
-    borderColor: string;
-    backgroundImg: string;
-    textColor: string;
-    listColor: string; 
-  };
-  lists: ListData[];
-  updateBoardData: ()=>void,
-  toggleSidebar: ()=>void
-}
-
+import { showMessageDelete, showSuccessMessage } from "../../../../common/utils/message";
+import { SidebarProps } from "../../../../common/interfaces/SidebarProps";
+import { deleteBoard, putBoard, putLists } from "../../../../api/request";
+import { SidebarForm } from "../../../../common/interfaces/SidebarForm";
 
 export const Sidebar = ({
   isSidebarVisible,
@@ -30,46 +18,38 @@ export const Sidebar = ({
   toggleSidebar
 }: SidebarProps) => {
   const [listTitles, setListTitles] = useState<ListData[]>([]);
-  const [borderColor, setBorderColor] = useState('');
-  const [backgroundImg, setBackgroundImg] = useState('');
-  const [textColor, setTextColor] = useState('');
-  const [listColor, setListColor] = useState('');
   const { board_id } = useParams();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]; // Отримуємо файл
-    if (file) {
-      const reader = new FileReader(); // Створюємо FileReader
+  const { 
+    register, 
+    handleSubmit, 
+    setValue, 
+    reset 
+  } = useForm<SidebarForm>({
+    defaultValues: {
+      borderColor: '',
+      backgroundImg: '',
+      textColor: '',
+      listColor: ''
+    }
+  });
 
-      // Коли файл буде завантажено
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = event.target;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setBackgroundImg(reader.result as string); // Зберігаємо Base64-рядок в стані
+        const base64Image = reader.result as string;
+        setValue('backgroundImg', base64Image);
       };
-
-      reader.readAsDataURL(file); // Читаємо файл як Data URL (Base64)
+      reader.readAsDataURL(file); 
     }
   };
 
-  const handleChangeBorderColor = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setBorderColor(event.target.value);
-  };
-  const handleChangeTextColor = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setTextColor(event.target.value);
-  };
-  const handleChangeListColor = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setListColor(event.target.value);
-  };
-
-  //Функція для обміну місцями елементів масиву
   const swapAdjacent = (index: number) => {
-    let array = [...listTitles];
+    const array = [...listTitles];
     if (index < 0 || index >= array.length - 1) {
       return;
     }
@@ -77,78 +57,62 @@ export const Sidebar = ({
     setListTitles(array);
   };
 
-  const handleSaveChanges = async () => {
+  const onSubmit = async (data: SidebarForm) => {
     toggleSidebar();
-    await saveSettings();
+    await saveSettings(data);
     await updateLists(listTitles);
     updateBoardData();
   };
 
   const handleDeleteBoard = async () => { 
-    // Очікуємо на результат перед тим, як продовжувати
     const confirmation = await showMessageDelete('Ви впевнені, що хочете видалити дошку?');
     if (!confirmation) { 
-      return; // Якщо користувач натиснув "Скасувати", припиняємо виконання
+      return; 
     }
-    try {
-      const deleteResponse = await instance.delete(`board/${board_id}`);
-      if (deleteResponse) {
-        navigate('/'); 
-      }
-      showSuccessMessage('Видалено!', 'Ваша дошка була видалена.');
-    } catch (err) {
-      handleError(err);
+    const deleteResult = await deleteBoard(board_id);
+    if (deleteResult) {
+      navigate('/');
     }
+    showSuccessMessage('Видалено!', 'Ваша дошка була видалена.');
   };
 
-  const updateLists = async (lists:{id:number, title:string}[])=>{
-    try {
-      const data = lists.map((list, index)=>{
-        return {
-          id: list.id,
-          position: index+1
-        }
-      })
-      const putResponse = await instance.put(`board/${board_id}/list`, data);
-    } catch (err) {
-      console.error("Failed to fetch board", err);
-    }
-  }
-
-  const saveSettings = async () => {
-    try {
-      const data = { custom: { styles: {
-        borderColor: borderColor,
-        backgroundImg: backgroundImg,
-        textColor: textColor,
-        listColor: listColor,
-      } } };
-      if (!board_id) return;
-      const putResponse = await instance.put(`board/${board_id}`, data);
-    } catch (err) {
-      console.error("Failed to fetch board", err);
-    }
+  const updateLists = async (lists: { id: number, title: string }[]) => {
+    const data = lists.map((list, index) => ({
+      id: list.id,
+      position: index + 1
+    }));
+    await putLists(board_id, data);
   };
 
-  const settingInitialStyleValues=()=>{
-    setBorderColor(styles.borderColor);
-    setBackgroundImg(styles.backgroundImg);
-    setTextColor(styles.textColor);
-    setListColor(styles.listColor);
-  }
+  const saveSettings = async (data: SidebarForm) => {
+    const settings = { custom: { styles: data } };
+    await putBoard(board_id, settings);
+  };
 
-  useEffect(()=>{
-    setListTitles([...lists])
-  },[lists])
+  const settingInitialStyleValues = () => {
+    reset({
+      borderColor: styles.borderColor,
+      backgroundImg: styles.backgroundImg,
+      textColor: styles.textColor,
+      listColor: styles.listColor
+    });
+  };
 
-  useEffect(()=>{
-    settingInitialStyleValues()
-  },[styles])
 
-  useEffect(()=>{
-    settingInitialStyleValues()
-    setListTitles([...lists])
-  },[isSidebarVisible])
+  
+
+  useEffect(() => {
+    setListTitles([...lists]);
+  }, [lists]);
+
+  useEffect(() => {
+    settingInitialStyleValues();
+  }, [styles]);
+
+  useEffect(() => {
+    settingInitialStyleValues();
+    setListTitles([...lists]);
+  }, [isSidebarVisible]);
 
   return (
     <div
@@ -158,74 +122,67 @@ export const Sidebar = ({
       <h2>Налаштування дошки</h2>
       <h3 className="sidebarTitle">Списки:</h3>
       <ol className="sidebarList">
-        {listTitles.map((item, index) => {
-          return (
-            <li key={item.id} className="sidebarListItem">
-              <p>{item.title}</p>
-              <div className="btn-list-container">
-                <Button
-                  title={"Вгору"}
-                  name={"btn-move-list-up"}
-                  handleClickFunc={() => {
-                    swapAdjacent(index - 1);
-                  }}
-                >
-                  <img src="arrow-up.png" alt="<" width={10} height={10} />
-                </Button>
-                <Button
-                  title={"Донизу"}
-                  name={"btn-move-list-down"}
-                  handleClickFunc={() => {
-                    swapAdjacent(index);
-                  }}
-                >
-                  <img src="arrow-down.jpg" alt=">" width={10} height={10} />
-                </Button>
-              </div>
-            </li>
-          );
-        })}
+        {listTitles.map((item, index) => (
+          <li key={item.id} className="sidebarListItem">
+            <p>{item.title}</p>
+            <div className="btn-list-container">
+              <Button
+                title={"Вгору"}
+                name={"btn-move-list-up"}
+                handleClickFunc={() => swapAdjacent(index - 1)}
+              >
+                <img src="arrow-up.png" alt="<" width={10} height={10} />
+              </Button>
+              <Button
+                title={"Донизу"}
+                name={"btn-move-list-down"}
+                handleClickFunc={() => swapAdjacent(index)}
+              >
+                <img src="arrow-down.jpg" alt=">" width={10} height={10} />
+              </Button>
+            </div>
+          </li>
+        ))}
       </ol>
-      <label htmlFor="borderColor">
-        Колір дошки
-        <input
-          type="color"
-          name="borderColor"
-          value={borderColor}
-          onChange={handleChangeBorderColor}
-          className="colorInput"
-        />
-      </label>
-      <label htmlFor="backgroundImg">
-        Фонове зображення
-        <input
-          type="file"
-          name="backgroundImg"
-          accept="image/*"
-          onChange={handleImageUpload}
-        />
-      </label>
-      <label htmlFor="textColor">
-        Колір тексту
-        <input
-          type="color"
-          name="textColor"
-          value={textColor}
-          onChange={handleChangeTextColor}
-          className="colorInput"
-        />
-      </label>
-      <label htmlFor="listColor">
-        Колір карток
-        <input
-          type="color"
-          name="listColor"
-          value={listColor}
-          onChange={handleChangeListColor}
-          className="colorInput"
-        />
-      </label>
-      <Button title={"Зберегти налаштування"} name={"btn-save-settings btn-sidebar"} handleClickFunc={handleSaveChanges}>Зберегти зміни</Button>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <label htmlFor="borderColor">
+          Колір дошки
+          <input
+            id="borderColor"
+            type="color"
+            {...register("borderColor")}
+            className="colorInput"
+          />
+        </label>
+        <label htmlFor="backgroundImg">
+          Фонове зображення
+          <input
+            id="backgroundImg"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+        </label>
+        <label htmlFor="textColor">
+          Колір тексту
+          <input
+            id="textColor"
+            type="color"
+            {...register("textColor")}
+            className="colorInput"
+          />
+        </label>
+        <label htmlFor="listColor">
+          Колір карток
+          <input
+            id="listColor"
+            type="color"
+            {...register("listColor")}
+            className="colorInput"
+          />
+        </label>
+        <Button type="submit" title={"Зберегти налаштування"} name={"btn-save-settings btn-sidebar"}>Зберегти зміни</Button>
+      </form>
       <Button title={"Видалити дошку"} name={"btn-delete-board btn-sidebar"} handleClickFunc={handleDeleteBoard}>Видалити дошку</Button>
     </div>
   );

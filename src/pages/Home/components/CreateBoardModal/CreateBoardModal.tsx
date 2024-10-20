@@ -1,70 +1,61 @@
-import React, { useState } from "react";
-import './CreateBoardModal.scss'; 
-import instance from "../../../../api/request";
-import { validateBoardTitle
+import React from "react";
+import { useForm } from "react-hook-form";
+import './CreateBoardModal.scss';
+import { validateBoardTitle } from "../../../../common/utils/validateUtils"; 
+import { BoardModalProps } from "../../../../common/interfaces/BoardModalProps";
 
+const CreateBoardModal = ({ saveBoard, toggleModal }: BoardModalProps) => {
+  const { 
+    register, 
+    handleSubmit, 
+    reset, 
+    formState: { errors } 
+  } = useForm<{ board: string }>({
+    defaultValues: {
+      board: '',
+    },
+  });
 
- } from "../../../../common/utils/validateUtils"; 
-interface BoardData {
-  id: number;
-  title: string;
-  custom?: {
-    description: string;
-  };
-}
-
-interface ModalProps{
-  saveBoard: (title:string)=>void,
-  toggleModal: ()=>void
-}
-
-
-const CreateBoardModal = ({saveBoard, toggleModal}:ModalProps) => {
-  const [inputValue, setInputValue] = useState('')
-  const [isCorrectValue, setIsCorrectValue] = useState(true);
-
-  const closeModal = ()=>{
+  const closeModal = () => {
     toggleModal();
-    setInputValue('');
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    reset(); 
   };
 
-  const handleInputSubmit = () => {
-    let isCorrect = validateBoardTitle(inputValue);
-    setIsCorrectValue(isCorrect);
-    if(!isCorrect){
+  const onSubmit = (data: { board: string }) => {
+    const isCorrect = validateBoardTitle(data.board);
+    if (!isCorrect) {
       return;
     }
-    saveBoard(inputValue);
-    setInputValue('');
+    saveBoard(data.board);
+    reset(); 
     closeModal();
   };
-
 
   return (
     <div className="modal-overlay">
       <div className="modal">
         <h2>Додати дошку</h2>
-        <label htmlFor="board">Введіть назву</label>
-        <input 
-          type="text" 
-          value={inputValue}
-          name="board"
-          onChange={handleInputChange} 
-          placeholder="Введіть текст" 
-        />
-        {!isCorrectValue && <p>Назва дошки не повинна бути порожньою і може містити лише літери, цифри, пробіли, тире, крапки та підкреслення.</p>}
-        <div className="modal-btns-container">
-          <button onClick={closeModal} className="close-btn">Закрити</button>
-          <button onClick={handleInputSubmit} className="submit-btn">Додати</button>          
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <label htmlFor="board">Введіть назву</label>
+          <input
+            id="board"
+            type="text"
+            {...register("board", { 
+              required: "Назва дошки є обов'язковою", 
+              validate: value => validateBoardTitle(value) || "Назва може містити лише літери, цифри, пробіли, тире, крапки та підкреслення" 
+            })}
+            placeholder="Введіть текст"
+          />
+          
+          {errors.board && <p>{errors.board.message}</p>}
 
+          <div className="modal-btns-container">
+            <button type="button" onClick={closeModal} className="close-btn">Закрити</button>
+            <button type="submit" className="submit-btn">Додати</button>
+          </div>
+        </form>
       </div>
     </div>
-
   );
 };
 

@@ -1,10 +1,6 @@
-interface ButtonProps{
-  title: string,
-  name: string,
-  children: React.ReactNode;
-  handleClickFunc: ()=>void
-}
+import React from "react"
+import { ButtonProps } from "../../../../common/interfaces/ButtonProps"
 
-export const Button = ({title, name, children, handleClickFunc}:ButtonProps) => {
-  return <button className={name} title={title} onClick={handleClickFunc}>{children}</button>
+export const Button = ({title, name, children, handleClickFunc, type}:ButtonProps) => {
+  return <button type={type || 'button'} className={name} title={title} onClick={handleClickFunc}>{children}</button>
 }

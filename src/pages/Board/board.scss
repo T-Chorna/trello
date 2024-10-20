@@ -17,6 +17,9 @@
   min-height: 100vh;
   // background: url('https://img.freepik.com/premium-photo/cork-texture-corkboard_88281-1802.jpg'); /* Добавь ссылку на изображение текстуры */
   background: var(--board-background);
+  background-size: cover; /* Розтягує зображення, щоб закрити весь фон */
+  background-repeat: no-repeat; /* Не дозволяє зображенню повторюватись */
+  background-position: center; /* Центрує зображення */
   border: 10px solid var(--board-border-color); /* Коричневая рамка */
   padding: 20px;
   font-family: "Amatic SC", sans-serif;
